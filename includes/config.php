@@ -2,7 +2,7 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'task_manager');
 define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_PASS', 'celina21');
 
 // Email configuration
 define('SMTP_HOST', 'smtp.gmail.com');

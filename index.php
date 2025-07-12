@@ -1,8 +1,9 @@
 <?php
 require_once 'includes/config.php';
-require_once 'includes/database.php';
-require_once 'includes/UserManager.php';
+require_once 'includes/db.php';
+require_once 'includes/usermanager.php';
 require_once 'includes/functions.php';
+
 
 $db = new Database();
 $connection = $db->connect();
@@ -45,11 +46,6 @@ if ($userManager->isLoggedIn()) {
                             <a href="register.php" class="btn btn-outline-secondary btn-lg">Register</a>
                         </div>
                         
-                        <div class="text-center mt-4">
-                            <small class="text-muted">
-                                Demo Admin: admin@taskmanager.com / admin123
-                            </small>
-                        </div>
                     </div>
                 </div>
             </div>

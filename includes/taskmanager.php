@@ -26,8 +26,8 @@ class TaskManager {
         $stmt = $this->db->prepare("
             SELECT t.*, u.name as assigned_by_name 
             FROM tasks t 
-            JOIN users u ON t.assigned_by = u.id 
-            WHERE t.assigned_to = ? 
+            JOIN users u ON assigned_by = uid 
+            WHERE assigned_to = ? 
             ORDER BY t.deadline ASC
         ");
         $stmt->execute([$userId]);

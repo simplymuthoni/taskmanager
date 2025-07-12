@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/config.php';
-require_once 'includes/database.php';
-require_once 'includes/UserManager.php';
+require_once 'includes/db.php';
+require_once 'includes/usermanager.php';
 
 $db = new Database();
 $connection = $db->connect();

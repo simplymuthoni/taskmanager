@@ -1,6 +1,17 @@
 <?php
 class UserManager {
     private $db;
+
+    private function generateUUID() {
+    return sprintf(
+        '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
+    }
     
     public function __construct($database) {
         $this->db = $database;
@@ -15,8 +26,12 @@ class UserManager {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         
         try {
-            $stmt = $this->db->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-            $result = $stmt->execute([$name, $email, $hashedPassword, $role]);
+            $uid = $this->generateUUID();
+
+            // Include uid in Insert
+            
+            $stmt = $this->db->prepare("INSERT INTO users (uid, name, email, password, role) VALUES (?, ?, ?, ?, ?)");
+            $result = $stmt->execute([$uid,$name, $email, $hashedPassword, $role]);
             
             if ($result) {
                 return ['success' => true, 'message' => 'User created successfully'];
@@ -29,12 +44,12 @@ class UserManager {
     }
     
     public function login($email, $password) {
-        $stmt = $this->db->prepare("SELECT id, name, email, password, role FROM users WHERE email = ?");
+        $stmt = $this->db->prepare("SELECT uid, name, email, password, role FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         
         if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_uid'] = $user['uid'];
             $_SESSION['user_name'] = $user['name'];
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['user_role'] = $user['role'];
@@ -52,7 +67,7 @@ class UserManager {
     }
     
     public function isLoggedIn() {
-        return isset($_SESSION['user_id']) && isset($_SESSION['login_time']) && 
+        return isset($_SESSION['user_uid']) && isset($_SESSION['login_time']) && 
                (time() - $_SESSION['login_time']) < SESSION_TIMEOUT;
     }
     
@@ -61,20 +76,20 @@ class UserManager {
     }
     
     public function getAllUsers() {
-        $stmt = $this->db->query("SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC");
+        $stmt = $this->db->query("SELECT uid, name, email, role, created_at FROM users ORDER BY created_at DESC");
         return $stmt->fetchAll();
     }
     
     public function getUserById($id) {
-        $stmt = $this->db->prepare("SELECT id, name, email, role, created_at FROM users WHERE id = ?");
+        $stmt = $this->db->prepare("SELECT uid, name, email, role, created_at FROM users WHERE uid = ?");
         $stmt->execute([$id]);
         return $stmt->fetch();
     }
     
-    public function updateUser($id, $name, $email, $role) {
+    public function updateUser($uid, $name, $email, $role) {
         try {
-            $stmt = $this->db->prepare("UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?");
-            $result = $stmt->execute([$name, $email, $role, $id]);
+            $stmt = $this->db->prepare("UPDATE users SET name = ?, email = ?, role = ? WHERE uid = ?");
+            $result = $stmt->execute([$name, $email, $role, $uid]);
             
             if ($result) {
                 return ['success' => true, 'message' => 'User updated successfully'];
@@ -86,10 +101,10 @@ class UserManager {
         return ['success' => false, 'message' => 'Unknown error occurred'];
     }
     
-    public function deleteUser($id) {
+    public function deleteUser($uid) {
         try {
             $stmt = $this->db->prepare("DELETE FROM users WHERE id = ?");
-            $result = $stmt->execute([$id]);
+            $result = $stmt->execute([$uid]);
             
             if ($result) {
                 return ['success' => true, 'message' => 'User deleted successfully'];
@@ -102,7 +117,7 @@ class UserManager {
     }
     
     private function emailExists($email) {
-        $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt = $this->db->prepare("SELECT uid FROM users WHERE email = ?");
         $stmt->execute([$email]);
         return $stmt->fetch() !== false;
     }
