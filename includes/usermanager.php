@@ -69,9 +69,9 @@ class UserManager {
         }
         
         // Check if email is verified
-        if (!$user['email_verified']) {
-            return ['success' => false, 'message' => 'Please verify your email address first'];
-        }
+        // if (!$user['email_verified']) {
+        //     return ['success' => false, 'message' => 'Please verify your email address first'];
+        // }
         
         if (password_verify($password, $user['password'])) {
             // Reset login attempts on successful login
@@ -117,7 +117,7 @@ class UserManager {
     }
     
     public function getUserById($id) {
-        $stmt = $this->db->prepare("SELECT uid, username, email, name, last_name, role, phone, department, job_title, status, email_verified, last_login, created_at FROM users WHERE id = ?");
+        $stmt = $this->db->prepare("SELECT uid, username, email, name, last_name, role, phone, department, job_title, status, email_verified, last_login, created_at FROM users WHERE uid = ?");
         $stmt->execute([$id]);
         return $stmt->fetch();
     }
@@ -134,7 +134,7 @@ class UserManager {
                 return ['success' => false, 'message' => 'Email already exists'];
             }
             
-            $stmt = $this->db->prepare("UPDATE users SET username = ?, email = ?, name = ?, last_name = ?, role = ?, phone = ?, department = ?, job_title = ?, status = ? WHERE id = ?");
+            $stmt = $this->db->prepare("UPDATE users SET username = ?, email = ?, name = ?, last_name = ?, role = ?, phone = ?, department = ?, job_title = ?, status = ? WHERE uid = ?");
             $result = $stmt->execute([$username, $email, $name, $last_name, $role, $phone, $department, $job_title, $status, $uid]);
             
             if ($result) {
@@ -237,7 +237,7 @@ class UserManager {
         $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
         
         try {
-            $stmt = $this->db->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $stmt = $this->db->prepare("UPDATE users SET password = ? WHERE uid = ?");
             $result = $stmt->execute([$hashedPassword, $userUid]);
             
             if ($result) {
@@ -249,6 +249,7 @@ class UserManager {
         
         return ['success' => false, 'message' => 'Unknown error occurred'];
     }
+
     
     // Private helper methods
     private function emailExists($email) {
@@ -314,9 +315,13 @@ class UserManager {
         $stmt->execute([$email]);
     }
     
-    private function updateLastLogin($userId) {
-        $stmt = $this->db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
-        $stmt->execute([$userId]);
+    /**
+     * Update the last login timestamp for a user.
+     * @param int $userId The user ID to update.
+     */
+    private function updateLastLogin($userUid) {
+        $stmt = $this->db->prepare("UPDATE users SET last_login = NOW() WHERE uid = ?");
+        $stmt->execute([$userUid]);
     }
 }
 ?>

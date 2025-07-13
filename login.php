@@ -103,11 +103,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             letter-spacing: 0.5px;
             transition: all 0.3s ease;
             width: 100%;
+            color: white;
         }
         
         .btn-login:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            color: white;
         }
         
         .alert {
@@ -167,6 +169,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: white;
             font-size: 1.5rem;
         }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-check-label {
+            color: #666;
+            font-weight: 400;
+        }
+        
+        .password-toggle {
+            border-radius: 0 10px 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -218,10 +235,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        name="password" 
                                        placeholder="Enter your password"
                                        required>
-                                <button class="btn btn-outline-secondary" 
+                                <button class="btn btn-outline-secondary password-toggle" 
                                         type="button" 
-                                        id="togglePassword"
-                                        style="border-radius: 0 10px 10px 0;">
+                                        id="togglePassword">
                                     <i class="fas fa-eye" id="eyeIcon"></i>
                                 </button>
                             </div>
@@ -234,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </label>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary btn-login">
+                        <button type="submit" class="btn btn-login">
                             <i class="fas fa-sign-in-alt me-2"></i>
                             Sign In
                         </button>
@@ -302,10 +318,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 alert('Please enter a valid email address.');
                 return false;
             }
-        });
-        
-        // Add loading state to submit button
-        document.querySelector('form').addEventListener('submit', function() {
+            
+            // Add loading state to submit button
             const submitBtn = document.querySelector('.btn-login');
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing In...';
             submitBtn.disabled = true;

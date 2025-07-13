@@ -8,14 +8,26 @@ class EmailService {
     private $fromName;
     
     public function __construct() {
-        // Load email configuration from config.php or environment variables
+        // Load email configuration from config.php 
         $this->smtpHost = EMAIL_HOST ?? 'smtp.gmail.com';
         $this->smtpPort = EMAIL_PORT ?? 587;
-        $this->smtpUsername = EMAIL_USERNAME ?? 'managert344@gmail.com';
-        $this->smtpPassword = EMAIL_PASSWORD ?? '@sAfezone44';
-        $this->fromEmail = EMAIL_FROM ?? 'managert344@gmail.com';
+        $this->smtpUsername = EMAIL_USERNAME ?? 'patriciamuthoni414@gmail.com';
+        $this->smtpPassword = EMAIL_PASSWORD ?? 'gpeh sqkj fvpm kefp ';
+        $this->fromEmail = EMAIL_FROM ?? 'patriciamuthoni414@gmail.com';
         $this->fromName = EMAIL_FROM_NAME ?? 'Task Manager';
+
+        // Validate SMTP configuration
+        if (empty($this->smtpHost) || empty($this->smtpPort) ||
+            empty($this->smtpUsername) || empty($this->fromEmail) || empty($this->fromName)) {
+            throw new Exception("Email configuration is incomplete. Please check your settings.");
+        }
+
+        // Ensure SMTP credentials are set
+        if (empty($this->smtpUsername) || empty($this->smtpPassword)) {
+            throw new Exception("SMTP credentials are not set. Please check your configuration.");
+            }
     }
+        
     
     public function sendVerificationEmail($email, $name, $token) {
         $subject = "Please verify your email address";

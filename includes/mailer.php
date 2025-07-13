@@ -14,9 +14,9 @@ class Mailer {
     
     public function __construct() {
         // Configure your Gmail credentials here
-        $this->smtp_username = 'managert344@gmail.com'; 
-        $this->smtp_password = ''; 
-        $this->from_email = 'managert344@gmail.com';
+        $this->smtp_username = 'patriciamuthoni414@gmail.com'; 
+        $this->smtp_password = 'gpeh sqkj fvpm kefp'; 
+        $this->from_email = 'patriciauthoni414@gmail.com';
         $this->from_name = 'Task Manager System';
     }
     

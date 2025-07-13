@@ -12,9 +12,9 @@ $taskManager = new TaskManager($connection);
 
 requireLogin();
 
-$userId = $_SESSION['user_id'];
-$userTasks = $taskManager->getTasksByUser($userId);
-$taskStats = $taskManager->getTaskStats($userId);
+$userUid = $_SESSION['user_uid'];
+$userTasks = $taskManager->getTasksByUser($userUid);
+$taskStats = $taskManager->getTaskStats($userUid);
 $message = '';
 
 // Handle task status update
@@ -22,12 +22,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $taskId = (int)$_POST['task_id'];
     $newStatus = $_POST['status'];
     
-    $result = $taskManager->updateTaskStatus($taskId, $newStatus, $userId);
+    $result = $taskManager->updateTaskStatus($taskId, $newStatus, $userUid);
     $message = $result['message'];
     
     // Refresh tasks
-    $userTasks = $taskManager->getTasksByUser($userId);
-    $taskStats = $taskManager->getTaskStats($userId);
+    $userTasks = $taskManager->getTasksByUser($userUid);
+    $taskStats = $taskManager->getTaskStats($userUid);
 }
 ?>
 <!DOCTYPE html>
