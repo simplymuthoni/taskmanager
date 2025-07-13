@@ -13,7 +13,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- TABLE: users
 -- ================================================
 CREATE TABLE `users` (
-    `id` CHAR(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
+    `uid` CHAR(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     `username` VARCHAR(50) NOT NULL UNIQUE,
     `email` VARCHAR(100) NOT NULL UNIQUE,
     `password` VARCHAR(255) NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE `users` (
     `account_locked_until` DATETIME DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
+    PRIMARY KEY (`uid`),
     INDEX `idx_username` (`username`),
     INDEX `idx_email` (`email`),
     INDEX `idx_role` (`role`),
