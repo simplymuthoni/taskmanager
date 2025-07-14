@@ -42,7 +42,7 @@ class AdminKeyHandler {
         // Find the key in database
         $keyData = $this->findValidKey($provided_key);
         if (!$keyData) {
-            $this->logKeyAttempt($provided_key, null, $ip_address, false, 'Key not found', $email);
+            $this->logKeyAttempt($provided_key, $ip_address, false, 'Key not found', $email);
             return [
                 'valid' => false,
                 'message' => 'Invalid admin registration key'
@@ -51,7 +51,7 @@ class AdminKeyHandler {
         
         // Check if key is expired
         if ($keyData['expires_at'] && strtotime($keyData['expires_at']) < time()) {
-            $this->logKeyAttempt($provided_key, $keyData['id'], $ip_address, false, 'Key expired', $email);
+            $this->logKeyAttempt($provided_key, $keyData['uid'], $ip_address, false, 'Key expired', $email);
             return [
                 'valid' => false,
                 'message' => 'Admin registration key has expired'
@@ -60,7 +60,7 @@ class AdminKeyHandler {
         
         // Check if key has reached max uses
         if ($keyData['max_uses'] && $keyData['usage_count'] >= $keyData['max_uses']) {
-            $this->logKeyAttempt($provided_key, $keyData['id'], $ip_address, false, 'Max uses exceeded', $email);
+            $this->logKeyAttempt($provided_key, $keyData['uid'], $ip_address, false, 'Max uses exceeded', $email);
             return [
                 'valid' => false,
                 'message' => 'Admin registration key has reached maximum uses'
@@ -68,8 +68,12 @@ class AdminKeyHandler {
         }
         
         // Check department restriction
+        error_log("DEBUG: Submitted department: '" . $department . "'");
+        error_log("DEBUG: Key department_restriction: '" . $keyData['department_restriction'] . "'");
+        error_log("DEBUG: Are they equal? " . ($department === $keyData['department_restriction'] ? 'YES' : 'NO'));
+
         if ($keyData['department_restriction'] && $department !== $keyData['department_restriction']) {
-            $this->logKeyAttempt($provided_key, $keyData['id'], $ip_address, false, 'Department restriction', $email);
+            $this->logKeyAttempt($provided_key, $keyData['uid'], $ip_address, false, 'Department restriction', $email);
             return [
                 'valid' => false,
                 'message' => 'This key is restricted to ' . $keyData['department_restriction'] . ' department'
@@ -82,7 +86,7 @@ class AdminKeyHandler {
             $requiredDomain = ltrim($keyData['email_domain_restriction'], '@');
             
             if ($emailDomain !== $requiredDomain) {
-                $this->logKeyAttempt($provided_key, $keyData['id'], $ip_address, false, 'Email domain restriction', $email);
+                $this->logKeyAttempt($provided_key, $keyData['uid'], $ip_address, false, 'Email domain restriction', $email);
                 return [
                     'valid' => false,
                     'message' => 'This key is restricted to ' . $keyData['email_domain_restriction'] . ' email addresses'
@@ -91,8 +95,8 @@ class AdminKeyHandler {
         }
         
         // Key is valid - increment usage count
-        $this->incrementKeyUsage($keyData['id']);
-        $this->logKeyAttempt($provided_key, $keyData['id'], $ip_address, true, 'Success', $email);
+        $this->incrementKeyUsage($keyData['uid']);
+        $this->logKeyAttempt($provided_key, $keyData['uid'], $ip_address, true, 'Success', $email);
         
         return [
             'valid' => true,
@@ -121,17 +125,17 @@ class AdminKeyHandler {
     /**
      * Increment key usage count
      */
-    private function incrementKeyUsage($key_uid) {
+    private function incrementKeyUsage($uid) {
         $stmt = $this->pdo->prepare("
             UPDATE admin_keys 
             SET usage_count = usage_count + 1 
             WHERE uid = ?
         ");
         
-        $stmt->execute([$key_uid]);
+        $stmt->execute([$uid]);
         
         // Log the usage
-        $this->logKeyHistory($key_uid, 'used');
+        $this->logKeyHistory($uid, 'used');
     }
     
     /**
@@ -165,17 +169,17 @@ class AdminKeyHandler {
     /**
      * Log admin key attempts
      */
-    private function logKeyAttempt($key, $key_uid, $ip_address, $success, $failure_reason = null, $email = null) {
+    private function logKeyAttempt($key, $uid, $ip_address, $success, $failure_reason = null, $email = null) {
         try {
             $stmt = $this->pdo->prepare("
                 INSERT INTO admin_key_attempts 
-                (key_hash, key_uid, ip_address, success, failure_reason, user_agent, email_attempted, created_at) 
+                (key_hash, uid, ip_address, success, failure_reason, user_agent, email_attempted, created_at) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
             ");
             
             $stmt->execute([
                 hash('sha256', $key),
-                $key_uid,
+                $uid,
                 $ip_address,
                 $success ? 1 : 0,
                 $failure_reason,
@@ -190,16 +194,16 @@ class AdminKeyHandler {
     /**
      * Log key history for audit trail
      */
-    private function logKeyHistory($key_uid, $action, $details = null) {
+    private function logKeyHistory($uid, $action, $details = null) {
         try {
             $stmt = $this->pdo->prepare("
                 INSERT INTO admin_key_history 
-                (admin_key_uid, action, performed_by, ip_address, details, created_at) 
+                (admin_uid, action, performed_by, ip_address, details, created_at) 
                 VALUES (?, ?, ?, ?, ?, NOW())
             ");
             
             $stmt->execute([
-                $key_uid,
+                $uid,
                 $action,
                 $_SESSION['username'] ?? 'system',
                 $_SERVER['REMOTE_ADDR'] ?? 'unknown',
@@ -213,24 +217,24 @@ class AdminKeyHandler {
     /**
      * Record successful admin registration
      */
-    public function recordAdminRegistration($user_id, $key_uid, $registration_data = []) {
+    public function recordAdminRegistration($user_id, $uid, $registration_data = []) {
         try {
             $stmt = $this->pdo->prepare("
                 INSERT INTO admin_registrations 
-                (user_uid, admin_key_uid, registered_by, ip_address, user_agent, registration_data, created_at) 
+                (user_uid, admin_uid, registered_by, ip_address, user_agent, registration_data, created_at) 
                 VALUES (?, ?, ?, ?, ?, ?, NOW())
             ");
             
             $stmt->execute([
                 $user_id,
-                $key_uid,
+                $uid,
                 $_SESSION['username'] ?? 'self-registration',
                 $_SERVER['REMOTE_ADDR'] ?? 'unknown',
                 $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown',
                 json_encode($registration_data)
             ]);
             
-            $this->logKeyHistory($key_uid, 'used', ['user_id' => $user_id]);
+            $this->logKeyHistory($uid, 'used', ['user_id' => $user_id]);
             
         } catch (Exception $e) {
             error_log("Failed to record admin registration: " . $e->getMessage());
@@ -257,7 +261,7 @@ class AdminKeyHandler {
     /**
      * Revoke a specific key
      */
-    public function revokeKey($key_uid, $revoked_by = 'system') {
+    public function revokeKey($uid, $revoked_by = 'system') {
         try {
             $stmt = $this->pdo->prepare("
                 UPDATE admin_keys 
@@ -265,10 +269,10 @@ class AdminKeyHandler {
                 WHERE id = ?
             ");
             
-            $success = $stmt->execute([$revoked_by, $key_uid]);
+            $success = $stmt->execute([$revoked_by, $uid]);
             
             if ($success) {
-                $this->logKeyHistory($key_uid, 'revoked', ['revoked_by' => $revoked_by]);
+                $this->logKeyHistory($uid, 'revoked', ['revoked_by' => $revoked_by]);
             }
             
             return $success;
@@ -281,9 +285,9 @@ class AdminKeyHandler {
     /**
      * Get key usage statistics
      */
-    public function getKeyStatistics($key_uid) {
-        $whereClause = $key_uid ? "WHERE ak.id = ?" : "";
-        $params = $key_uid ? [$key_uid] : [];
+    public function getKeyStatistics($uid) {
+        $whereClause = $uid ? "WHERE ak.id = ?" : "";
+        $params = $uid ? [$uid] : [];
         
         $stmt = $this->pdo->prepare("
             SELECT 
@@ -298,14 +302,14 @@ class AdminKeyHandler {
                 COUNT(aka.id) as total_attempts,
                 SUM(CASE WHEN aka.success = 1 THEN 1 ELSE 0 END) as successful_attempts
             FROM admin_keys ak
-            LEFT JOIN admin_registrations ar ON ak.id = ar.admin_key_uid
-            LEFT JOIN admin_key_attempts aka ON ak.id = aka.key_uid
+            LEFT JOIN admin_registrations ar ON ak.id = ar.admin_uid
+            LEFT JOIN admin_key_attempts aka ON ak.id = aka.uid
             {$whereClause}
             GROUP BY ak.id
             ORDER BY ak.created_at DESC
         ");
         
         $stmt->execute($params);
-        return $key_uid ? $stmt->fetch(PDO::FETCH_ASSOC) : $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $uid ? $stmt->fetch(PDO::FETCH_ASSOC) : $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

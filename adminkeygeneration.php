@@ -146,14 +146,14 @@ class AdminKeyGenerator {
     /**
      * Revoke a specific key
      */
-    public function revokeKey($key_uid, $revoked_by = 'system') {
+    public function revokeKey($uid, $revoked_by = 'system') {
         $stmt = $this->pdo->prepare("
             UPDATE admin_keys 
             SET is_active = FALSE, revoked_at = NOW(), revoked_by = ?
             WHERE uid = ?
         ");
         
-        return $stmt->execute([$revoked_by, $key_uid]);
+        return $stmt->execute([$revoked_by, $uid]);
     }
     
     /**

@@ -877,18 +877,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             function toggleAdminKey() {
-            const role = document.getElementById('role').value;
-            const adminKeyGroup = document.getElementById('admin-key-group');
-            const adminKeyInput = document.getElementById('admin_key');
-            
-            if (role === 'admin') {
-                adminKeyGroup.style.display = 'block';
-                adminKeyInput.required = true;
-            } else {
-                adminKeyGroup.style.display = 'none';
-                adminKeyInput.required = false;
-                adminKeyInput.value = '';
-            }
+                const role = document.getElementById('role').value;
+                const adminKeyGroup = document.getElementById('admin-key-group');
+                const adminKeyInput = document.getElementById('admin_key');
+                
+                if (role === 'admin') {
+                    adminKeyGroup.style.display = 'block';
+                    adminKeyInput.required = true;
+                } else {
+                    adminKeyGroup.style.display = 'none';
+                    adminKeyInput.required = false;
+                    adminKeyInput.value = '';
+                }
         }
             // If form is not valid, prevent submission
             if (!isValid) {
