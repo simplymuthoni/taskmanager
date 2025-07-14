@@ -1,16 +1,17 @@
 === SINGLE KEY GENERATION ===
-Generated Key: e19166255990fd93d3404296afe03c65d2b640c841ad1e7a51f215860d3c00e7
-Expires: 2025-07-16 11:21:04
+Generated Key: 86289cd4aca94d806aa0db61ea65fa56cc7d6205839de2e7ffac35057851f867
+UID: 9066a65e-d844-4c31-bdc9-d0b7eec7cc77
+Expires: 2025-07-16 17:28:12
 Max Uses: 2
 
 === MULTIPLE KEYS GENERATION ===
 === ADMIN REGISTRATION KEYS ===
 
 KEY #1
-Key: c98128d71374583b4cc70b9be42604d4621b60981f303ede7939149f11823032
-UID: 0
+Key: 782739858e6098b8443c76c393bae4b2166163df67676871f751f4176ac78bdb
+UID: 9422d363-7965-488e-8e85-abd8ae947e20
 Max Uses: 3
-Expires: 2025-07-21 11:21:04
+Expires: 2025-07-21 17:28:13
 Department: IT
 Email Domain: Any
 Created By: system
@@ -18,10 +19,10 @@ Notes: Registration key for IT department admins
 Permissions: admin, department_it
 --------------------------------------------------
 KEY #2
-Key: 8cfb486faadf9517fa83087e983e9d970b298819885fa1aed702018a3f2db8c2
-UID: 0
+Key: 374991e2bb2511ac13ea8c6a09c5eaa25e4d8e3ff4b27aa1766d2ae66eda4f6c
+UID: 0a3a95d3-4dbc-4755-ad72-ec8631c21d03
 Max Uses: 3
-Expires: 2025-07-21 11:21:04
+Expires: 2025-07-21 17:28:13
 Department: HR
 Email Domain: Any
 Created By: system
@@ -29,10 +30,10 @@ Notes: Registration key for HR department admins
 Permissions: admin, department_hr
 --------------------------------------------------
 KEY #3
-Key: 8065d2e2719e0f7b63451ef948e6ac88c9ce20d767a10651d0cc801f6fc9a651
-UID: 0
+Key: 4682c7edf8fdba6d14ea0761dd5d2a59db6ad2f0544e4aa916b30229670bb3cb
+UID: f3aa0bed-8cd9-44ca-b321-477002f166f9
 Max Uses: 3
-Expires: 2025-07-21 11:21:04
+Expires: 2025-07-21 17:28:13
 Department: Finance
 Email Domain: Any
 Created By: system
@@ -40,10 +41,10 @@ Notes: Registration key for Finance department admins
 Permissions: admin, department_finance
 --------------------------------------------------
 KEY #4
-Key: 88cf5b398be4bc599b9a325c703467aa4d2b3873a75874bf1e3eda27d451d0f6
-UID: 0
+Key: 54a101d8839e8037a1461fe3917642c41c2a6e8448898e57c742f7b960fd191e
+UID: cd1335c2-f711-4314-adf1-2fc80e674536
 Max Uses: 3
-Expires: 2025-07-21 11:21:04
+Expires: 2025-07-21 17:28:13
 Department: Operations
 Email Domain: Any
 Created By: system
@@ -51,10 +52,10 @@ Notes: Registration key for Operations department admins
 Permissions: admin, department_operations
 --------------------------------------------------
 KEY #5
-Key: 17699721a9749f719f06ec3fc9e2519bef958297c86d35a7616ebb78c38971d1
-UID: 0
+Key: 0a87c1b89655e847ce5d9de8d04f5694663d188a6bdf00296616143b743089bd
+UID: 1bd6f416-08a2-4160-b2be-dd2bf6e8c348
 Max Uses: 1
-Expires: 2025-07-15 11:21:04
+Expires: 2025-07-15 17:28:13
 Department: Any
 Email Domain: @company.com
 Created By: john.doe
@@ -62,10 +63,10 @@ Notes: One-time key for new IT admin
 Permissions: full_admin
 --------------------------------------------------
 KEY #6
-Key: 16b4b12aae33d47119b559057d28be5c60491be0ad06d468412810f8220bfc19
-UID: 0
+Key: efae159c4aa07bd92e4c9a628d74fff976902843955b3f4156c0d0c42ef1b256
+UID: 967de970-6e38-4b59-b8e2-2d76fb96f0f5
 Max Uses: 1
-Expires: 2025-07-16 11:21:04
+Expires: 2025-07-16 17:28:13
 Department: HR
 Email Domain: Any
 Created By: jane.smith
@@ -73,39 +74,56 @@ Notes: Key for HR department head
 Permissions: full_admin
 --------------------------------------------------
 KEY #7
-Key: aa692ef83bc46c12577539e20e63c9a18d399313a137fcd3fd0f843f29ecf61d
-UID: 0
+Key: af41c2b047df0cb4fce0be4eed5c90649402775cacc61c90cecf508a018df539
+UID: 8bbb02ec-e3b2-4788-827c-8a3d88d3b473
 Max Uses: 1
-Expires: 2025-07-17 11:21:04
+Expires: 2025-07-17 17:28:13
 Department: Any
 Email Domain: Any
 Created By: system
 Notes: Emergency super admin key
 Permissions: super_admin
 --------------------------------------------------
+
 === ACTIVE KEYS ===
-UID: a13c5d39-60a4-11f0-9056-2c8158e6e203, Preview: 9009ca1f..., Uses: 0/2, Expires: 2025-07-16 11:21:04
-UID: a13ccc45-60a4-11f0-9056-2c8158e6e203, Preview: 928d1167..., Uses: 0/3, Expires: 2025-07-21 11:21:04
-UID: a13eb400-60a4-11f0-9056-2c8158e6e203, Preview: 43006dd6..., Uses: 0/3, Expires: 2025-07-21 11:21:04
-UID: a13f1215-60a4-11f0-9056-2c8158e6e203, Preview: 61a0fd7b..., Uses: 0/3, Expires: 2025-07-21 11:21:04
-UID: a1400adc-60a4-11f0-9056-2c8158e6e203, Preview: 9ca54d21..., Uses: 0/3, Expires: 2025-07-21 11:21:04
-UID: a140690b-60a4-11f0-9056-2c8158e6e203, Preview: fdf1144b..., Uses: 0/1, Expires: 2025-07-15 11:21:04
-UID: a140c42d-60a4-11f0-9056-2c8158e6e203, Preview: ba3f5bdb..., Uses: 0/1, Expires: 2025-07-16 11:21:04
-UID: a1411f4d-60a4-11f0-9056-2c8158e6e203, Preview: 41495649..., Uses: 0/1, Expires: 2025-07-17 11:21:04
-UID: 8a93501e-60a4-11f0-9056-2c8158e6e203, Preview: 12aef1ca..., Uses: 0/2, Expires: 2025-07-16 11:20:26
-UID: 16e3ffaf-60a4-11f0-9056-2c8158e6e203, Preview: abb3d16d..., Uses: 0/2, Expires: 2025-07-16 11:17:12
-UID: 16e4762d-60a4-11f0-9056-2c8158e6e203, Preview: e3efa714..., Uses: 0/3, Expires: 2025-07-21 11:17:12
-UID: 16e5a38a-60a4-11f0-9056-2c8158e6e203, Preview: b474f2e7..., Uses: 0/3, Expires: 2025-07-21 11:17:12
-UID: 16e6e571-60a4-11f0-9056-2c8158e6e203, Preview: 8022a423..., Uses: 0/3, Expires: 2025-07-21 11:17:12
-UID: 16e7429e-60a4-11f0-9056-2c8158e6e203, Preview: 63e155c1..., Uses: 0/3, Expires: 2025-07-21 11:17:12
-UID: 16e84883-60a4-11f0-9056-2c8158e6e203, Preview: d3ef5de0..., Uses: 0/1, Expires: 2025-07-15 11:17:12
-UID: 16e8a1ab-60a4-11f0-9056-2c8158e6e203, Preview: cd84979a..., Uses: 0/1, Expires: 2025-07-16 11:17:12
-UID: 16e8fcbb-60a4-11f0-9056-2c8158e6e203, Preview: 31a367c3..., Uses: 0/1, Expires: 2025-07-17 11:17:12
-UID: 9ce22fb9-609c-11f0-9056-2c8158e6e203, Preview: ea0558e3..., Uses: 0/2, Expires: 2025-07-16 10:23:41
-UID: 9ce3d8f1-609c-11f0-9056-2c8158e6e203, Preview: f86e1451..., Uses: 0/3, Expires: 2025-07-21 10:23:41
-UID: 9ce6cca3-609c-11f0-9056-2c8158e6e203, Preview: 8b3e357b..., Uses: 0/3, Expires: 2025-07-21 10:23:41
-UID: 9ce763a5-609c-11f0-9056-2c8158e6e203, Preview: 41b99f97..., Uses: 0/3, Expires: 2025-07-21 10:23:41
-UID: 9ce7eabc-609c-11f0-9056-2c8158e6e203, Preview: e7853282..., Uses: 0/3, Expires: 2025-07-21 10:23:41
-UID: 9ce921e2-609c-11f0-9056-2c8158e6e203, Preview: 3f08e7c6..., Uses: 0/1, Expires: 2025-07-15 10:23:41
-UID: 9ce9a728-609c-11f0-9056-2c8158e6e203, Preview: 4f634ae6..., Uses: 0/1, Expires: 2025-07-16 10:23:41
-UID: 9cea14c9-609c-11f0-9056-2c8158e6e203, Preview: d59b4ce0..., Uses: 0/1, Expires: 2025-07-17 10:23:41
+UID: 0a3a95d3-4dbc-4755-ad72-ec8631c21d03, Preview: c6e492d7..., Uses: 0/3, Expires: 2025-07-21 17:28:13, Created: 2025-07-14 20:28:13
+UID: 1bd6f416-08a2-4160-b2be-dd2bf6e8c348, Preview: b6cb6e43..., Uses: 0/1, Expires: 2025-07-15 17:28:13, Created: 2025-07-14 20:28:13
+UID: 8bbb02ec-e3b2-4788-827c-8a3d88d3b473, Preview: 1d47c36a..., Uses: 0/1, Expires: 2025-07-17 17:28:13, Created: 2025-07-14 20:28:13
+UID: 9422d363-7965-488e-8e85-abd8ae947e20, Preview: bbdf6e01..., Uses: 0/3, Expires: 2025-07-21 17:28:13, Created: 2025-07-14 20:28:13
+UID: 967de970-6e38-4b59-b8e2-2d76fb96f0f5, Preview: 4130d9b2..., Uses: 0/1, Expires: 2025-07-16 17:28:13, Created: 2025-07-14 20:28:13
+UID: cd1335c2-f711-4314-adf1-2fc80e674536, Preview: 51ea1ea0..., Uses: 0/3, Expires: 2025-07-21 17:28:13, Created: 2025-07-14 20:28:13
+UID: f3aa0bed-8cd9-44ca-b321-477002f166f9, Preview: 49d36294..., Uses: 0/3, Expires: 2025-07-21 17:28:13, Created: 2025-07-14 20:28:13
+UID: 9066a65e-d844-4c31-bdc9-d0b7eec7cc77, Preview: 900f5f23..., Uses: 0/2, Expires: 2025-07-16 17:28:12, Created: 2025-07-14 20:28:12
+UID: d12ebf79-60d4-11f0-8411-2c8158e6e203, Preview: bcbb4a10..., Uses: 0/3, Expires: 2025-07-21 17:06:00, Created: 2025-07-14 20:06:00
+UID: d12f55fd-60d4-11f0-8411-2c8158e6e203, Preview: ecd52eee..., Uses: 0/3, Expires: 2025-07-21 17:06:00, Created: 2025-07-14 20:06:00
+UID: d12feb04-60d4-11f0-8411-2c8158e6e203, Preview: 5ca346c9..., Uses: 0/3, Expires: 2025-07-21 17:06:00, Created: 2025-07-14 20:06:00
+UID: d1313b08-60d4-11f0-8411-2c8158e6e203, Preview: 880d80f2..., Uses: 0/3, Expires: 2025-07-21 17:06:00, Created: 2025-07-14 20:06:00
+UID: d1322d5f-60d4-11f0-8411-2c8158e6e203, Preview: 76779011..., Uses: 0/1, Expires: 2025-07-15 17:06:00, Created: 2025-07-14 20:06:00
+UID: d132c08b-60d4-11f0-8411-2c8158e6e203, Preview: 0e183b35..., Uses: 0/1, Expires: 2025-07-16 17:06:00, Created: 2025-07-14 20:06:00
+UID: d133e9a9-60d4-11f0-8411-2c8158e6e203, Preview: 2ebfacea..., Uses: 0/1, Expires: 2025-07-17 17:06:00, Created: 2025-07-14 20:06:00
+UID: d09580d3-60d4-11f0-8411-2c8158e6e203, Preview: 0729d42e..., Uses: 0/2, Expires: 2025-07-16 17:05:59, Created: 2025-07-14 20:05:59
+UID: a13c5d39-60a4-11f0-9056-2c8158e6e203, Preview: 9009ca1f..., Uses: 0/2, Expires: 2025-07-16 11:21:04, Created: 2025-07-14 14:21:04
+UID: a13ccc45-60a4-11f0-9056-2c8158e6e203, Preview: 928d1167..., Uses: 0/3, Expires: 2025-07-21 11:21:04, Created: 2025-07-14 14:21:04
+UID: a13eb400-60a4-11f0-9056-2c8158e6e203, Preview: 43006dd6..., Uses: 0/3, Expires: 2025-07-21 11:21:04, Created: 2025-07-14 14:21:04
+UID: a13f1215-60a4-11f0-9056-2c8158e6e203, Preview: 61a0fd7b..., Uses: 0/3, Expires: 2025-07-21 11:21:04, Created: 2025-07-14 14:21:04
+UID: a1400adc-60a4-11f0-9056-2c8158e6e203, Preview: 9ca54d21..., Uses: 0/3, Expires: 2025-07-21 11:21:04, Created: 2025-07-14 14:21:04
+UID: a140690b-60a4-11f0-9056-2c8158e6e203, Preview: fdf1144b..., Uses: 0/1, Expires: 2025-07-15 11:21:04, Created: 2025-07-14 14:21:04
+UID: a140c42d-60a4-11f0-9056-2c8158e6e203, Preview: ba3f5bdb..., Uses: 0/1, Expires: 2025-07-16 11:21:04, Created: 2025-07-14 14:21:04
+UID: a1411f4d-60a4-11f0-9056-2c8158e6e203, Preview: 41495649..., Uses: 0/1, Expires: 2025-07-17 11:21:04, Created: 2025-07-14 14:21:04
+UID: 8a93501e-60a4-11f0-9056-2c8158e6e203, Preview: 12aef1ca..., Uses: 0/2, Expires: 2025-07-16 11:20:26, Created: 2025-07-14 14:20:26
+UID: 16e3ffaf-60a4-11f0-9056-2c8158e6e203, Preview: abb3d16d..., Uses: 0/2, Expires: 2025-07-16 11:17:12, Created: 2025-07-14 14:17:12
+UID: 16e4762d-60a4-11f0-9056-2c8158e6e203, Preview: e3efa714..., Uses: 0/3, Expires: 2025-07-21 11:17:12, Created: 2025-07-14 14:17:12
+UID: 16e5a38a-60a4-11f0-9056-2c8158e6e203, Preview: b474f2e7..., Uses: 0/3, Expires: 2025-07-21 11:17:12, Created: 2025-07-14 14:17:12
+UID: 16e6e571-60a4-11f0-9056-2c8158e6e203, Preview: 8022a423..., Uses: 0/3, Expires: 2025-07-21 11:17:12, Created: 2025-07-14 14:17:12
+UID: 16e7429e-60a4-11f0-9056-2c8158e6e203, Preview: 63e155c1..., Uses: 0/3, Expires: 2025-07-21 11:17:12, Created: 2025-07-14 14:17:12
+UID: 16e84883-60a4-11f0-9056-2c8158e6e203, Preview: d3ef5de0..., Uses: 0/1, Expires: 2025-07-15 11:17:12, Created: 2025-07-14 14:17:12
+UID: 16e8a1ab-60a4-11f0-9056-2c8158e6e203, Preview: cd84979a..., Uses: 0/1, Expires: 2025-07-16 11:17:12, Created: 2025-07-14 14:17:12
+UID: 16e8fcbb-60a4-11f0-9056-2c8158e6e203, Preview: 31a367c3..., Uses: 0/1, Expires: 2025-07-17 11:17:12, Created: 2025-07-14 14:17:12
+UID: 9ce22fb9-609c-11f0-9056-2c8158e6e203, Preview: ea0558e3..., Uses: 0/2, Expires: 2025-07-16 10:23:41, Created: 2025-07-14 13:23:41
+UID: 9ce3d8f1-609c-11f0-9056-2c8158e6e203, Preview: f86e1451..., Uses: 0/3, Expires: 2025-07-21 10:23:41, Created: 2025-07-14 13:23:41
+UID: 9ce6cca3-609c-11f0-9056-2c8158e6e203, Preview: 8b3e357b..., Uses: 0/3, Expires: 2025-07-21 10:23:41, Created: 2025-07-14 13:23:41
+UID: 9ce763a5-609c-11f0-9056-2c8158e6e203, Preview: 41b99f97..., Uses: 0/3, Expires: 2025-07-21 10:23:41, Created: 2025-07-14 13:23:41
+UID: 9ce7eabc-609c-11f0-9056-2c8158e6e203, Preview: e7853282..., Uses: 0/3, Expires: 2025-07-21 10:23:41, Created: 2025-07-14 13:23:41
+UID: 9ce921e2-609c-11f0-9056-2c8158e6e203, Preview: 3f08e7c6..., Uses: 0/1, Expires: 2025-07-15 10:23:41, Created: 2025-07-14 13:23:41
+UID: 9ce9a728-609c-11f0-9056-2c8158e6e203, Preview: 4f634ae6..., Uses: 0/1, Expires: 2025-07-16 10:23:41, Created: 2025-07-14 13:23:41
+UID: 9cea14c9-609c-11f0-9056-2c8158e6e203, Preview: d59b4ce0..., Uses: 0/1, Expires: 2025-07-17 10:23:41, Created: 2025-07-14 13:23:41
