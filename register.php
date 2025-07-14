@@ -4,6 +4,7 @@ require_once 'includes/db.php';
 require_once 'includes/usermanager.php';
 require_once 'includes/emailservice.php';
 require_once 'includes/functions.php';
+require_once 'includes/adminkeyhandler.php';
 
 $db = new Database();
 $connection = $db->connect();
@@ -12,6 +13,7 @@ $emailService = new EmailService();
 
 $error = '';
 $success = '';
+$keydata = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = sanitize($_POST['username']);
@@ -23,8 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone = sanitize($_POST['phone']);
     $department = sanitize($_POST['department']);
     $job_title = sanitize($_POST['job_title']);
-    $role = sanitize($_POST['role'] ?? 'user'); // Default to user if not set
-    $admin_key = $_POST['admin_key'] ?? ''; // Admin registration key
+    $role = sanitize($_POST['role'] ?? 'user'); 
+    $admin_key = $_POST['admin_key'] ?? '';
     
     // Validation
     if (empty($username) || empty($name) || empty($last_name) || empty($email) || empty($password) || empty($confirmPassword)) {
@@ -39,20 +41,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Username must be at least 3 characters long';
     } elseif (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
         $error = 'Username can only contain letters, numbers, and underscores';
-    } elseif ($role === 'admin' && $admin_key !== ADMIN_REGISTRATION_KEY) {
-        $error = 'Invalid admin registration key';
-    } else {
-        // Additional validation for admin role
-        if ($role === 'admin') {
-            if (empty($department) || empty($job_title)) {
-                $error = 'Department and job title are required for admin registration';
-            } elseif (strlen($password) < 8) {
-                $error = 'Admin passwords must be at least 8 characters long';
-            } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/', $password)) {
-                $error = 'Admin password must contain at least one uppercase letter, one lowercase letter, one number, and one special character';
-            }
+    } 
+
+    // Admin role validation with multi-key support
+    if (empty($error) && $role === 'admin') {
+        if (empty($admin_key)) {
+            $error = 'Admin registration key is required for admin accounts';
+        } else {
+            // Initialize admin key handler
+            $adminKeyHandler = new AdminKeyHandler($pdo);
+            
+            // Validate admin key with restrictions
+            $keyValidation = $adminKeyHandler->validateAdminKey(
+                $admin_key, 
+                $email, 
+                $department, 
+                $_SERVER['REMOTE_ADDR']
+            );
+
+         if (!$keyValidation['valid']) {
+                $error = $keyValidation['message'];
+            } else {
+        try{
+                // Key is valid, store key data for later use
+                $keyData = $keyValidation['key_data'];
+                
+                // Additional validation based on key restrictions
+                if ($keyData['department_restriction'] && empty($department)) {
+                    $error = 'Department is required for this admin registration key';
+                } elseif (empty($job_title)) {
+                    $error = 'Job title is required for admin registration';
+                } elseif (strlen($password) < (defined('ADMIN_PASSWORD_MIN_LENGTH') ? ADMIN_PASSWORD_MIN_LENGTH : 8)) {
+                    $error = 'Admin passwords must be at least 8 characters long';
+                } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/', $password)) {
+                    $error = 'Admin password must contain at least one uppercase letter, one lowercase letter, one number, and one special character';
+                }
+                
+                // If key has department restriction, enforce it
+                if ($keyData['department_restriction'] && $department !== $keyData['department_restriction']) {
+                    $error = 'Department must be: ' . $keyData['department_restriction'];
+                }
+            } catch (Exception $e) {
+            error_log('AdminKeyHandler error: ' . $e->getMessage());
+            $error = 'An error occurred while validating the admin key';
         }
-        
+        }  
+    }
+        // Process registration if no errors
         if (empty($error)) {
             $result = $userManager->register(
                 $username,
@@ -69,6 +104,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($result['success']) {
                 $roleText = $role === 'admin' ? 'Admin' : 'User';
                 $success = $roleText . ' registration successful!';
+
+                // Handle admin registration specifics
+            if ($role === 'admin' && $keyData) {
+                // Log admin registration for security audit
+                $logData = [
+                    'username' => $username,
+                    'email' => $email,
+                    'department' => $department,
+                    'job_title' => $job_title,
+                    'key_used' => $keyData['id'],
+                    'key_created_by' => $keyData['created_by'],
+                    'ip_address' => $_SERVER['REMOTE_ADDR'],
+                    'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown',
+                    'timestamp' => date('Y-m-d H:i:s')
+                ];
+                
+                error_log("Admin registration: " . json_encode($logData));
+                
+                /// Record the admin registration in database
+                $adminKeyHandler->recordAdminRegistration($result['user_id'], $keyData['id'], $logData);
+                
+                // Add key-specific success message
+                if ($keyData['department_restriction']) {
+                    $success .= ' (Registered for ' . $keyData['department_restriction'] . ' department)';
+                }
+
+                // Check if key has reached max uses
+                if ($keyData['max_uses'] && ($keyData['usage_count'] + 1) >= $keyData['max_uses']) {
+                    error_log("Admin key {$keyData['id']} has reached maximum usage limit");
+                    
+                    // Optionally disable the key after max uses
+                    $adminKeyHandler->disableKey($keyData['id'], 'Maximum usage limit reached');
+                }
+                
+                // Send notification to super admin about new admin registration
+                try {
+                    $adminKeyHandler->notifyAdminRegistration($logData);
+                } catch (Exception $e) {
+                    error_log("Failed to send admin registration notification: " . $e->getMessage());
+                }
+            }
         
                 // Only try to send email if email service is properly configured
                 if (isset($emailService) && method_exists($emailService, 'sendVerificationEmail')) {
@@ -655,6 +731,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Initialize on Page Load
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleAdminKey();
+        });
         // Role selection functionality
         const roleOptions = document.querySelectorAll('.role-option');
         const selectedRoleInput = document.getElementById('selectedRole');
@@ -795,6 +875,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             }
+
+            function toggleAdminKey() {
+            const role = document.getElementById('role').value;
+            const adminKeyGroup = document.getElementById('admin-key-group');
+            const adminKeyInput = document.getElementById('admin_key');
+            
+            if (role === 'admin') {
+                adminKeyGroup.style.display = 'block';
+                adminKeyInput.required = true;
+            } else {
+                adminKeyGroup.style.display = 'none';
+                adminKeyInput.required = false;
+                adminKeyInput.value = '';
+            }
+        }
             // If form is not valid, prevent submission
             if (!isValid) {
                 event.preventDefault();

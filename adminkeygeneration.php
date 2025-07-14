@@ -4,6 +4,13 @@
  * Generate different keys for different admins with various configurations
  */
 
+require_once 'includes/config.php'; 
+
+$host = 'localhost';
+$dbname = 'task_manager';
+$username = 'root';
+$password = 'celina21';
+
 class AdminKeyGenerator {
     private $pdo;
     
@@ -57,7 +64,7 @@ class AdminKeyGenerator {
         
         return [
             'key' => $key,
-            'id' => $this->pdo->lastInsertId(),
+            'uid' => $this->pdo->lastInsertId(),
             'expires_at' => $expires_at,
             'max_uses' => $config['max_uses'],
             'config' => $config
@@ -122,7 +129,7 @@ class AdminKeyGenerator {
      */
     public function getActiveKeys() {
         $stmt = $this->pdo->prepare("
-            SELECT id, LEFT(key_hash, 8) as key_preview, expires_at, max_uses, 
+            SELECT uid, LEFT(key_hash, 8) as key_preview, expires_at, max_uses, 
                    usage_count, created_by, department_restriction, notes, 
                    email_domain_restriction, created_at
             FROM admin_keys 
@@ -139,14 +146,14 @@ class AdminKeyGenerator {
     /**
      * Revoke a specific key
      */
-    public function revokeKey($key_id, $revoked_by = 'system') {
+    public function revokeKey($key_uid, $revoked_by = 'system') {
         $stmt = $this->pdo->prepare("
             UPDATE admin_keys 
             SET is_active = FALSE, revoked_at = NOW(), revoked_by = ?
-            WHERE id = ?
+            WHERE uid = ?
         ");
         
-        return $stmt->execute([$revoked_by, $key_id]);
+        return $stmt->execute([$revoked_by, $key_uid]);
     }
     
     /**
@@ -158,7 +165,7 @@ class AdminKeyGenerator {
         foreach ($keys as $i => $keyData) {
             echo "KEY #" . ($i + 1) . "\n";
             echo "Key: " . $keyData['key'] . "\n";
-            echo "ID: " . $keyData['id'] . "\n";
+            echo "UID: " . $keyData['uid'] . "\n";
             echo "Max Uses: " . ($keyData['max_uses'] ?: 'Unlimited') . "\n";
             echo "Expires: " . ($keyData['expires_at'] ?: 'Never') . "\n";
             echo "Department: " . ($keyData['config']['department_restriction'] ?: 'Any') . "\n";
@@ -174,7 +181,7 @@ class AdminKeyGenerator {
 // Usage example
 try {
     // Database connection (adjust as needed)
-    $pdo = new PDO("mysql:host=localhost;dbname=your_db", $username, $password);
+    $pdo = new PDO("mysql:host=localhost;dbname=task_manager", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     $generator = new AdminKeyGenerator($pdo);
@@ -203,7 +210,7 @@ try {
     echo "=== ACTIVE KEYS ===\n";
     $activeKeys = $generator->getActiveKeys();
     foreach ($activeKeys as $key) {
-        echo "ID: {$key['id']}, Preview: {$key['key_preview']}..., ";
+        echo "UID: {$key['uid']}, Preview: {$key['key_preview']}..., ";
         echo "Uses: {$key['usage_count']}/{$key['max_uses']}, ";
         echo "Expires: " . ($key['expires_at'] ?: 'Never') . "\n";
     }
