@@ -27,7 +27,7 @@ class AdminKeyHandler {
     /**
      * Validate admin registration key with multiple key support
      */
-    public function validateAdminKey($provided_key, $email, $department, $ip_address) {
+    public function validateAdminKey($key, $email, $department, $ip_address) {
         // Check rate limiting first
         if (!$this->checkRateLimit($ip_address)) {
             return [
@@ -37,12 +37,12 @@ class AdminKeyHandler {
         }
 
         // Log the attempt
-        $this->logAttempt($ip_address, $provided_key);
+        $this->logAttempt($ip_address, $key);
         
         // Find the key in database
-        $keyData = $this->findValidKey($provided_key);
+        $keyData = $this->findValidKey($key);
         if (!$keyData) {
-            $this->logKeyAttempt($provided_key, $ip_address, false, 'Key not found', $email);
+            $this->logKeyAttempt($key, $ip_address, false, 'Key not found', $email);
             return [
                 'valid' => false,
                 'message' => 'Invalid admin registration key'
@@ -311,5 +311,32 @@ class AdminKeyHandler {
         
         $stmt->execute($params);
         return $uid ? $stmt->fetch(PDO::FETCH_ASSOC) : $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+     public function disableKey($keyUid, $reason = '') {
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE admin_keys 
+                SET is_active = 0, 
+                    disabled_reason = :reason,
+                    disabled_at = NOW()
+                WHERE uid = :uid
+            ");
+            
+            $result = $stmt->execute([
+                ':uid' => $keyUid,
+                ':reason' => $reason
+            ]);
+            
+            if ($result) {
+                error_log("Admin key {$keyUid} disabled successfully. Reason: {$reason}");
+                return true;
+            }
+            
+            return false;
+            
+        } catch (PDOException $e) {
+            error_log("Error disabling admin key {$keyUid}: " . $e->getMessage());
+            return false;
+        }
     }
 }

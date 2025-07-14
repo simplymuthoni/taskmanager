@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'email' => $email,
                     'department' => $department,
                     'job_title' => $job_title,
-                    'key_used' => $keyData['id'],
+                    'key_used' => $keyData['uid'],
                     'key_created_by' => $keyData['created_by'],
                     'ip_address' => $_SERVER['REMOTE_ADDR'],
                     'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown',
@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 error_log("Admin registration: " . json_encode($logData));
                 
                 /// Record the admin registration in database
-                $adminKeyHandler->recordAdminRegistration($result['user_id'], $keyData['id'], $logData);
+                $adminKeyHandler->recordAdminRegistration($result['user_uid'], $keyData['uid'], $logData);
                 
                 // Add key-specific success message
                 if ($keyData['department_restriction']) {
@@ -132,18 +132,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Check if key has reached max uses
                 if ($keyData['max_uses'] && ($keyData['usage_count'] + 1) >= $keyData['max_uses']) {
-                    error_log("Admin key {$keyData['id']} has reached maximum usage limit");
+                    error_log("Admin key {$keyData['uid']} has reached maximum usage limit");
                     
                     // Optionally disable the key after max uses
-                    $adminKeyHandler->disableKey($keyData['id'], 'Maximum usage limit reached');
+                    $adminKeyHandler->disableKey($keyData['uid'], 'Maximum usage limit reached');
                 }
                 
-                // Send notification to super admin about new admin registration
-                try {
-                    $adminKeyHandler->notifyAdminRegistration($logData);
-                } catch (Exception $e) {
-                    error_log("Failed to send admin registration notification: " . $e->getMessage());
-                }
+                // // Send notification to super admin about new admin registration
+                // try {
+                //     $adminKeyHandler->notifyAdminRegistration($logData);
+                // } catch (Exception $e) {
+                //     error_log("Failed to send admin registration notification: " . $e->getMessage());
+                // }
             }
         
                 // Only try to send email if email service is properly configured
@@ -644,9 +644,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <span class="input-group-text">
                                             <i class="fas fa-building"></i>
                                         </span>
-                                        <input type="text" class="form-control" id="admin_department" name="department" 
-                                               value="<?php echo isset($_POST['department']) ? htmlspecialchars($_POST['department']) : ''; ?>" 
-                                               placeholder="IT, Management, etc.">
+                                        <select class="form-control" id="admin_department" name="department" required>
+                                            <option value="" disabled selected>Select department</option>
+                                            <option value="IT" <?php echo (isset($_POST['department']) && $_POST['department'] === 'IT') ? 'selected' : ''; ?>>IT</option>
+                                            <option value="HR" <?php echo (isset($_POST['department']) && $_POST['department'] === 'HR') ? 'selected' : ''; ?>>HR</option>
+                                            <option value="Finance" <?php echo (isset($_POST['department']) && $_POST['department'] === 'Finance') ? 'selected' : ''; ?>>Finance</option>
+                                            <option value="Operation" <?php echo (isset($_POST['department']) && $_POST['department'] === 'Operation') ? 'selected' : ''; ?>>Operation</option>
+                                            <option value="Marketing" <?php echo (isset($_POST['department']) && $_POST['department'] === 'Marketing') ? 'selected' : ''; ?>>Marketing</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -730,171 +735,200 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Initialize on Page Load
-        document.addEventListener('DOMContentLoaded', function() {
-            toggleAdminKey();
-        });
-        // Role selection functionality
-        const roleOptions = document.querySelectorAll('.role-option');
-        const selectedRoleInput = document.getElementById('selectedRole');
-        const logoIcon = document.getElementById('logoIcon');
-        const headerTitle = document.getElementById('headerTitle');
-        const headerSubtitle = document.getElementById('headerSubtitle');
-        const submitBtn = document.getElementById('submitBtn');
-        const adminWarning = document.getElementById('adminWarning');
-        const adminKeyField = document.getElementById('adminKeyField');
-        const adminRequiredFields = document.getElementById('adminRequiredFields');
-        const optionalFieldsSection = document.getElementById('optionalFieldsSection');
-        const passwordHelp = document.getElementById('passwordHelp');
-        const adminPasswordReq = document.getElementById('adminPasswordReq');
+   <script>
+    // Initialize on Page Load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleAdminKey();
+    });
+
+    // Toggle admin key function
+    function toggleAdminKey() {
+        const role = document.getElementById('selectedRole').value;
+        const adminKeyGroup = document.getElementById('admin-key-group');
+        const adminKeyInput = document.getElementById('admin_key');
         
-        roleOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const role = this.dataset.role;
+        if (role === 'admin') {
+            adminKeyGroup.style.display = 'block';
+            adminKeyInput.required = true;
+        } else {
+            adminKeyGroup.style.display = 'none';
+            adminKeyInput.required = false;
+            adminKeyInput.value = '';
+        }
+    }
+
+    // Role selection functionality
+    const roleOptions = document.querySelectorAll('.role-option');
+    const selectedRoleInput = document.getElementById('selectedRole');
+    const logoIcon = document.getElementById('logoIcon');
+    const headerTitle = document.getElementById('headerTitle');
+    const headerSubtitle = document.getElementById('headerSubtitle');
+    const submitBtn = document.getElementById('submitBtn');
+    const adminWarning = document.getElementById('adminWarning');
+    const adminKeyField = document.getElementById('adminKeyField');
+    const adminRequiredFields = document.getElementById('adminRequiredFields');
+    const optionalFieldsSection = document.getElementById('optionalFieldsSection');
+    const passwordHelp = document.getElementById('passwordHelp');
+    const adminPasswordReq = document.getElementById('adminPasswordReq');
+    
+    roleOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const role = this.dataset.role;
+            
+            // Remove selected class from all options
+            roleOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            this.classList.add('selected');
+            
+            // Update hidden input
+            selectedRoleInput.value = role;
+            
+            // Update UI based on role
+            if (role === 'admin') {
+                logoIcon.classList.add('admin');
+                headerTitle.textContent = 'Create Admin Account';
+                headerSubtitle.textContent = 'Administrator registration with full system access';
+                submitBtn.classList.add('admin');
+                submitBtn.innerHTML = '<i class="fas fa-crown me-2"></i>Create Admin Account';
+                adminWarning.classList.remove('d-none');
+                adminKeyField.classList.remove('d-none');
+                adminRequiredFields.classList.remove('d-none');
+                optionalFieldsSection.classList.add('d-none');
+                passwordHelp.textContent = 'At least 8 characters with complexity requirements';
+                adminPasswordReq.classList.remove('d-none');
                 
-                // Remove selected class from all options
-                roleOptions.forEach(opt => opt.classList.remove('selected'));
+                // Make admin fields required
+                document.getElementById('admin_phone').setAttribute('required', 'required');
+                document.getElementById('admin_department').setAttribute('required', 'required');
+                document.getElementById('admin_job_title').setAttribute('required', 'required');
+            } else {
+                logoIcon.classList.remove('admin');
+                headerTitle.textContent = 'Create User Account';
+                headerSubtitle.textContent = 'Standard user registration for task management';
+                submitBtn.classList.remove('admin');
+                submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create User Account';
+                adminWarning.classList.add('d-none');
+                adminKeyField.classList.add('d-none');
+                adminRequiredFields.classList.add('d-none');
+                optionalFieldsSection.classList.remove('d-none');
+                passwordHelp.textContent = 'At least 6 characters';
+                adminPasswordReq.classList.add('d-none');
                 
-                // Add selected class to clicked option
-                this.classList.add('selected');
-                
-                // Update hidden input
-                selectedRoleInput.value = role;
-                
-                // Update UI based on role
-                if (role === 'admin') {
-                    logoIcon.classList.add('admin');
-                    headerTitle.textContent = 'Create Admin Account';
-                    headerSubtitle.textContent = 'Administrator registration with full system access';
-                    submitBtn.classList.add('admin');
-                    submitBtn.innerHTML = '<i class="fas fa-crown me-2"></i>Create Admin Account';
-                    adminWarning.classList.remove('d-none');
-                    adminKeyField.classList.remove('d-none');
-                    adminRequiredFields.classList.remove('d-none');
-                    optionalFieldsSection.classList.add('d-none');
-                    passwordHelp.textContent = 'At least 8 characters with complexity requirements';
-                    adminPasswordReq.classList.remove('d-none');
-                    
-                    // Make admin fields required
-                    document.getElementById('admin_phone').setAttribute('required', 'required');
-                    document.getElementById('admin_department').setAttribute('required', 'required');
-                    document.getElementById('admin_job_title').setAttribute('required', 'required');
-                } else {
-                    logoIcon.classList.remove('admin');
-                    headerTitle.textContent = 'Create User Account';
-                    headerSubtitle.textContent = 'Standard user registration for task management';
-                    submitBtn.classList.remove('admin');
-                    submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create User Account';
-                    adminWarning.classList.add('d-none');
-                    adminKeyField.classList.add('d-none');
-                    adminRequiredFields.classList.add('d-none');
-                    optionalFieldsSection.classList.remove('d-none');
-                    passwordHelp.textContent = 'At least 6 characters';
-                    adminPasswordReq.classList.add('d-none');
-                    // Remove required attributes from admin fields
-                    document.getElementById('admin_phone').removeAttribute('required');
-                    document.getElementById('admin_department').removeAttribute('required');
-                    document.getElementById('admin_job_title').removeAttribute('required');
-                }
-            });
+                // Remove required attributes from admin fields
+                document.getElementById('admin_phone').removeAttribute('required');
+                document.getElementById('admin_department').removeAttribute('required');
+                document.getElementById('admin_job_title').removeAttribute('required');
+            }
         });
-        // Password toggle functionality
-        const togglePassword = document.getElementById('togglePassword');
-        const toggleConfirmPassword = document.getElementById('toggleConfirmPassword'); 
-        const passwordInput = document.getElementById('password');
-        const confirmPasswordInput = document.getElementById('confirm_password');
-        const eyeIcon = document.getElementById('eyeIcon');
-        const eyeIconConfirm = document.getElementById('eyeIconConfirm');   
-        togglePassword.addEventListener('click', function() {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            eyeIcon.classList.toggle('fa-eye');
-            eyeIcon.classList.toggle('fa-eye-slash');
-        });
-        toggleConfirmPassword.addEventListener('click', function() {
-            const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            confirmPasswordInput.setAttribute('type', type);
-            eyeIconConfirm.classList.toggle('fa-eye');
-            eyeIconConfirm.classList.toggle('fa-eye-slash');
-            });
-        // Form validation
-        const registrationForm = document.getElementById('registrationForm');
-        registrationForm.addEventListener('submit', function(event) {
-            const role = selectedRoleInput.value;
-            const password = passwordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-            let isValid = true;
-            // Check if passwords match
-            if (password !== confirmPassword) {
+    });
+
+    // Password toggle functionality
+    const togglePassword = document.getElementById('togglePassword');
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword'); 
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const eyeIconConfirm = document.getElementById('eyeIconConfirm');   
+    
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        eyeIcon.classList.toggle('fa-eye');
+        eyeIcon.classList.toggle('fa-eye-slash');
+    });
+    
+    toggleConfirmPassword.addEventListener('click', function() {
+        const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        confirmPasswordInput.setAttribute('type', type);
+        eyeIconConfirm.classList.toggle('fa-eye');
+        eyeIconConfirm.classList.toggle('fa-eye-slash');
+    });
+
+    // Form validation
+    const registrationForm = document.getElementById('registrationForm');
+    registrationForm.addEventListener('submit', function(event) {
+        const role = selectedRoleInput.value;
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        let isValid = true;
+        
+        console.log('Form submitted with role:', role); // Debug
+        
+        // Check if passwords match
+        if (password !== confirmPassword) {
+            event.preventDefault();
+            isValid = false;
+            confirmPasswordInput.classList.add('is-invalid');
+            confirmPasswordInput.setCustomValidity('Passwords do not match');
+        } else {
+            confirmPasswordInput.classList.remove('is-invalid');
+            confirmPasswordInput.setCustomValidity('');
+        }
+
+        // Additional validation for admin role
+        if (role === 'admin') {
+            const adminKey = document.getElementById('admin_key').value;
+            const adminPhone = document.getElementById('admin_phone').value;
+            const adminDepartment = document.getElementById('admin_department').value;
+            const adminJobTitle = document.getElementById('admin_job_title').value;
+            
+            console.log('Admin validation:', {
+                adminKey: adminKey,
+                adminPhone: adminPhone,
+                adminDepartment: adminDepartment,
+                adminJobTitle: adminJobTitle
+            }); // Debug
+            
+            if (!adminKey || !adminPhone || !adminDepartment || !adminJobTitle) {
                 event.preventDefault();
                 isValid = false;
-                confirmPasswordInput.classList.add('is-invalid');
-                confirmPasswordInput.setCustomValidity('Passwords do not match');
-            } else {
-                confirmPasswordInput.classList.remove('is-invalid');
-                confirmPasswordInput.setCustomValidity('');
-            }
-            // Additional validation for admin role
-            if (role === 'admin') {
-                const adminKey = document.getElementById('admin_key').value;
-                const adminPhone = document.getElementById('admin_phone').value;
-                const adminDepartment = document.getElementById('admin_department').value;
-                const adminJobTitle = document.getElementById('admin_job_title').value;
-                if (!adminKey || !adminPhone || !adminDepartment || !adminJobTitle)
-                {
-                    event.preventDefault();
-                    isValid = false;
-                    if (!adminKey) {
-                        document.getElementById('admin_key').classList.add('is-invalid');
-                        document.getElementById('admin_key').setCustomValidity('Admin key is required');
-                    } else {
-                        document.getElementById('admin_key').classList.remove('is-invalid');
-                        document.getElementById('admin_key').setCustomValidity('');
-                    }
-                    if (!adminPhone) {
-                        document.getElementById('admin_phone').classList.add('is-invalid');
-                        document.getElementById('admin_phone').setCustomValidity('Phone number is required');
-                    } else {
-                        document.getElementById('admin_phone').classList.remove('is-invalid');
-                        document.getElementById('admin_phone').setCustomValidity('');
-                    }
-                    if (!adminDepartment) {
-                        document.getElementById('admin_department').classList.add('is-invalid');
-                        document.getElementById('admin_department').setCustomValidity('Department is required');
-                    } else {
-                        document.getElementById('admin_department').classList.remove('is-invalid');
-                        document.getElementById('admin_department').setCustomValidity('');
-                    }
-                    if (!adminJobTitle) {
-                        document.getElementById('admin_job_title').classList.add('is-invalid');
-                        document.getElementById('admin_job_title').setCustomValidity('Job title is required');
-                    } else {
-                        document.getElementById('admin_job_title').classList.remove('is-invalid');
-                        document.getElementById('admin_job_title').setCustomValidity('');
-                    }
-                }
-            }
-
-            function toggleAdminKey() {
-                const role = document.getElementById('role').value;
-                const adminKeyGroup = document.getElementById('admin-key-group');
-                const adminKeyInput = document.getElementById('admin_key');
                 
-                if (role === 'admin') {
-                    adminKeyGroup.style.display = 'block';
-                    adminKeyInput.required = true;
+                console.log('Admin validation failed'); // Debug
+
+                if (!adminKey) {
+                    document.getElementById('admin_key').classList.add('is-invalid');
+                    document.getElementById('admin_key').setCustomValidity('Admin key is required');
                 } else {
-                    adminKeyGroup.style.display = 'none';
-                    adminKeyInput.required = false;
-                    adminKeyInput.value = '';
+                    document.getElementById('admin_key').classList.remove('is-invalid');
+                    document.getElementById('admin_key').setCustomValidity('');
                 }
-        }
-            // If form is not valid, prevent submission
-            if (!isValid) {
-                event.preventDefault();
+
+                if (!adminPhone) {
+                    document.getElementById('admin_phone').classList.add('is-invalid');
+                    document.getElementById('admin_phone').setCustomValidity('Phone number is required');
+                } else {
+                    document.getElementById('admin_phone').classList.remove('is-invalid');
+                    document.getElementById('admin_phone').setCustomValidity('');
+                }
+
+                if (!adminDepartment) {
+                    document.getElementById('admin_department').classList.add('is-invalid');
+                    document.getElementById('admin_department').setCustomValidity('Department is required');
+                } else {
+                    document.getElementById('admin_department').classList.remove('is-invalid');
+                    document.getElementById('admin_department').setCustomValidity('');
+                }
+                
+                if (!adminJobTitle) {
+                    document.getElementById('admin_job_title').classList.add('is-invalid');
+                    document.getElementById('admin_job_title').setCustomValidity('Job title is required');
+                } else {
+                    document.getElementById('admin_job_title').classList.remove('is-invalid');
+                    document.getElementById('admin_job_title').setCustomValidity('');
+                }
             }
-        });
-    </script>
+        }
+
+        // If form is not valid, prevent submission
+        if (!isValid) {
+            event.preventDefault();
+            console.log('Form validation failed, preventing submission'); // Debug
+            return false;
+        }
+        
+        console.log('Form validation passed, submitting'); // Debug
+    });
+</script>
 </body>
 </html>
