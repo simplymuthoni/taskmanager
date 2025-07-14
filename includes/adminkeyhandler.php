@@ -28,11 +28,11 @@ class AdminKeyHandler {
         );
     }
     
-    public function logAttempt($ip_address, $provided_key) {
+    public function logAttempt($ip_address, $key_hash) {
         // You can customize this logic
         $log_file = __DIR__ . '/../logs/admin_key_attempts.log';
 
-        $log_line = date('Y-m-d H:i:s') . " | IP: $ip_address | Key: $provided_key\n";
+        $log_line = date('Y-m-d H:i:s') . " | IP: $ip_address | Key: $key_hash\n";
 
         file_put_contents($log_file, $log_line, FILE_APPEND);
     }
@@ -40,7 +40,7 @@ class AdminKeyHandler {
     /**
      * Validate admin registration key with multiple key support
      */
-    public function validateAdminKey($provided_key, $email, $department, $ip_address) {
+    public function validateAdminKey($key_hash, $email, $department, $ip_address) {
         // Check rate limiting first
         if (!$this->checkRateLimit($ip_address)) {
             return [
@@ -50,12 +50,12 @@ class AdminKeyHandler {
         }
 
         // Log the attempt
-        $this->logAttempt($ip_address, $provided_key);
+        $this->logAttempt($ip_address, $key_hash);
         
         // Find the key in database
-        $keyData = $this->findValidKey($provided_key);
+        $keyData = $this->findValidKey($key_hash);
         if (!$keyData) {
-            $this->logKeyAttempt($provided_key, null, $ip_address, false, 'Key not found', $email);
+            $this->logKeyAttempt($key_hash, null, $ip_address, false, 'Key not found', $email);
             return [
                 'valid' => false,
                 'message' => 'Invalid admin registration key'
@@ -64,7 +64,7 @@ class AdminKeyHandler {
         
         // Check if key is expired
         if ($keyData['expires_at'] && strtotime($keyData['expires_at']) < time()) {
-            $this->logKeyAttempt($provided_key, $keyData['uid'], $ip_address, false, 'Key expired', $email);
+            $this->logKeyAttempt($key_hash, $keyData['uid'], $ip_address, false, 'Key expired', $email);
             return [
                 'valid' => false,
                 'message' => 'Admin registration key has expired'
@@ -73,7 +73,7 @@ class AdminKeyHandler {
         
         // Check if key has reached max uses
         if ($keyData['max_uses'] && $keyData['usage_count'] >= $keyData['max_uses']) {
-            $this->logKeyAttempt($provided_key, $keyData['uid'], $ip_address, false, 'Max uses exceeded', $email);
+            $this->logKeyAttempt($key_hash, $keyData['uid'], $ip_address, false, 'Max uses exceeded', $email);
             return [
                 'valid' => false,
                 'message' => 'Admin registration key has reached maximum uses'
@@ -86,7 +86,7 @@ class AdminKeyHandler {
         error_log("DEBUG: Are they equal? " . ($department === $keyData['department_restriction'] ? 'YES' : 'NO'));
 
         if ($keyData['department_restriction'] && $department !== $keyData['department_restriction']) {
-            $this->logKeyAttempt($provided_key, $keyData['uid'], $ip_address, false, 'Department restriction', $email);
+            $this->logKeyAttempt($key_hash, $keyData['uid'], $ip_address, false, 'Department restriction', $email);
             return [
                 'valid' => false,
                 'message' => 'This key is restricted to ' . $keyData['department_restriction'] . ' department'
@@ -99,7 +99,7 @@ class AdminKeyHandler {
             $requiredDomain = ltrim($keyData['email_domain_restriction'], '@');
             
             if ($emailDomain !== $requiredDomain) {
-                $this->logKeyAttempt($provided_key, $keyData['uid'], $ip_address, false, 'Email domain restriction', $email);
+                $this->logKeyAttempt($key_hash, $keyData['uid'], $ip_address, false, 'Email domain restriction', $email);
                 return [
                     'valid' => false,
                     'message' => 'This key is restricted to ' . $keyData['email_domain_restriction'] . ' email addresses'
@@ -109,7 +109,7 @@ class AdminKeyHandler {
         
         // Key is valid - increment usage count
         $this->incrementKeyUsage($keyData['uid']);
-        $this->logKeyAttempt($provided_key, $keyData['uid'], $ip_address, true, 'Success', $email);
+        $this->logKeyAttempt($key_hash, $keyData['uid'], $ip_address, true, 'Success', $email);
         
         return [
             'valid' => true,
@@ -117,11 +117,12 @@ class AdminKeyHandler {
             'key_data' => $keyData
         ];
     }
+
     
     /**
      * Find a valid key in the database
      */
-    private function findValidKey($provided_key) {
+    private function findValidKey($key_hash) {
         try {
             $stmt = $this->pdo->prepare("
                 SELECT uid, key_hash, expires_at, max_uses, usage_count, 
@@ -132,7 +133,7 @@ class AdminKeyHandler {
                 AND is_active = TRUE
             ");
             
-            $stmt->execute([hash('sha256', $provided_key)]);
+            $stmt->execute([hash('sha256', $key_hash)]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Database error in findValidKey: " . $e->getMessage());
