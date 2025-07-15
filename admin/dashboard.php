@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $totalUsers = count($userManager->getAllUsers());
 $totalTasks = count($taskManager->getAllTasks());
-$taskStats = $taskManager->getTaskStats();
+$taskStats = $taskManager->getTaskStats($_SESSION['user_id']);
 $recentTasks = array_slice($taskManager->getAllTasks(), 0, 5);
 $allUsers = $userManager->getAllUsers();
 $allTasks = $taskManager->getAllTasks();
