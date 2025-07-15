@@ -66,30 +66,30 @@ Project Structure
 
 ** Database Schema**
  
-+------------------------+
-| Tables_in_task_manager |
-+------------------------+
-| admin_key_attempts     |
-| admin_key_history      |
-| admin_keys             |
-| admin_registrations    |
-| tasks                  |
-| users                  |
-| users_backup           |
-+------------------------+
+    +------------------------+
+    | Tables_in_task_manager |
+    +------------------------+
+    | admin_key_attempts     |
+    | admin_key_history      |
+    | admin_keys             |
+    | admin_registrations    |
+    | tasks                  |
+    | users                  |
+    | users_backup           |
+    +------------------------+
 DESC admin_key_attempts;
-+-----------------+--------------+------+-----+---------------------+-------+
-| Field           | Type         | Null | Key | Default             | Extra |
-+-----------------+--------------+------+-----+---------------------+-------+
-| uid             | varchar(36)  | NO   | PRI | uuid()              |       |
-| key_hash        | varchar(255) | NO   |     | NULL                |       |
-| ip_address      | varchar(45)  | YES  | MUL | NULL                |       |
-| success         | tinyint(1)   | YES  | MUL | 0                   |       |
-| user_agent      | text         | YES  |     | NULL                |       |
-| created_at      | timestamp    | YES  | MUL | current_timestamp() |       |
-| failure_reason  | text         | YES  |     | NULL                |       |
-| email_attempted | varchar(100) | YES  |     | NULL                |       |
-+-----------------+--------------+------+-----+---------------------+-------+
+        +-----------------+--------------+------+-----+---------------------+-------+
+        | Field           | Type         | Null | Key | Default             | Extra |
+        +-----------------+--------------+------+-----+---------------------+-------+
+        | uid             | varchar(36)  | NO   | PRI | uuid()              |       |
+        | key_hash        | varchar(255) | NO   |     | NULL                |       |
+        | ip_address      | varchar(45)  | YES  | MUL | NULL                |       |
+        | success         | tinyint(1)   | YES  | MUL | 0                   |       |
+        | user_agent      | text         | YES  |     | NULL                |       |
+        | created_at      | timestamp    | YES  | MUL | current_timestamp() |       |
+        | failure_reason  | text         | YES  |     | NULL                |       |
+        | email_attempted | varchar(100) | YES  |     | NULL                |       |
+        +-----------------+--------------+------+-----+---------------------+-------+
 DESC admin_key_history;
 +--------------+--------------+------+-----+---------------------+----------------+
 | Field        | Type         | Null | Key | Default             | Extra          |
