@@ -52,7 +52,7 @@ define('SMTPSECURE', 'tls');
 define('EMAIL_HOST', 'smtp.gmail.com'); 
 define('EMAIL_PORT', 587); 
 define('EMAIL_USERNAME', 'patriciamuthoni414@gmail.com'); 
-define('EMAIL_PASSWORD', 'gpeh sqkj fvpm kefp '); 
+define('EMAIL_PASSWORD', 'gpeh sqkj fvpm kefp'); 
 define('EMAIL_FROM', 'patriciamuthoni414@gmail.com'); 
 define('EMAIL_FROM_NAME', 'Task Manager');
 
