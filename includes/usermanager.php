@@ -19,7 +19,7 @@ class UserManager {
         $this->db = $database;
     }
     
-    public function register($username, $email, $password, $name, $last_name, $role = 'user', $phone = null, $department = null, $job_title = null) {
+    public function register($username, $email, $password, $name, $role = 'user', $phone = null, $department = null, $job_title = null) {
         // Check if email already exists
         if ($this->emailExists($email)) {
             return ['success' => false, 'message' => 'Email already exists'];
@@ -36,8 +36,8 @@ class UserManager {
         $verificationToken = bin2hex(random_bytes(32));
         
         try {
-            $stmt = $this->db->prepare("INSERT INTO users (uid, username, email, password, name, last_name, role, phone, department, job_title, verification_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $result = $stmt->execute([$uid, $username, $email, $hashedPassword, $name, $last_name, $role, $phone, $department, $job_title, $verificationToken]);
+            $stmt = $this->db->prepare("INSERT INTO users (uid, username, email, password, name,  role, phone, department, job_title, verification_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $result = $stmt->execute([$uid, $username, $email, $hashedPassword, $name, $role, $phone, $department, $job_title, $verificationToken]);
             
             if ($result) {
                 return ['success' => true, 'message' => 'User created successfully', 'verification_token' => $verificationToken];
@@ -55,7 +55,7 @@ class UserManager {
             return ['success' => false, 'message' => 'Account is temporarily locked due to too many failed attempts'];
         }
         
-        $stmt = $this->db->prepare("SELECT uid, username, email, password, name, last_name, role, status, email_verified, login_attempts FROM users WHERE email = ?");
+        $stmt = $this->db->prepare("SELECT uid, username, email, password, name, role, status, email_verified, login_attempts FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         
@@ -84,7 +84,6 @@ class UserManager {
             $_SESSION['user_uid'] = $user['uid'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['user_name'] = $user['name'];
-            $_SESSION['user_last_name'] = $user['last_name'];
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['user_role'] = $user['role'];
             $_SESSION['login_time'] = time();
@@ -112,17 +111,17 @@ class UserManager {
     }
     
     public function getAllUsers() {
-        $stmt = $this->db->query("SELECT uid, username, email, name, last_name, role, phone, department, job_title, status, email_verified, last_login, created_at FROM users ORDER BY created_at DESC");
+        $stmt = $this->db->query("SELECT uid, username, email, name, role, phone, department, job_title, status, email_verified, last_login, created_at FROM users ORDER BY created_at DESC");
         return $stmt->fetchAll();
     }
     
     public function getUserById($id) {
-        $stmt = $this->db->prepare("SELECT uid, username, email, name, last_name, role, phone, department, job_title, status, email_verified, last_login, created_at FROM users WHERE uid = ?");
+        $stmt = $this->db->prepare("SELECT uid, username, email, name, role, phone, department, job_title, status, email_verified, last_login, created_at FROM users WHERE uid = ?");
         $stmt->execute([$id]);
         return $stmt->fetch();
     }
     
-    public function updateUser($uid, $username, $email, $name, $last_name, $role, $phone = null, $department = null, $job_title = null, $status = 'active') {
+    public function updateUser($uid, $username, $email, $name, $role, $phone = null, $department = null, $job_title = null, $status = 'active') {
         try {
             // Check if username exists for other users
             if ($this->usernameExistsForOtherUser($username, $uid)) {
@@ -134,8 +133,8 @@ class UserManager {
                 return ['success' => false, 'message' => 'Email already exists'];
             }
             
-            $stmt = $this->db->prepare("UPDATE users SET username = ?, email = ?, name = ?, last_name = ?, role = ?, phone = ?, department = ?, job_title = ?, status = ? WHERE uid = ?");
-            $result = $stmt->execute([$username, $email, $name, $last_name, $role, $phone, $department, $job_title, $status, $uid]);
+            $stmt = $this->db->prepare("UPDATE users SET username = ?, email = ?, name = ?,  role = ?, phone = ?, department = ?, job_title = ?, status = ? WHERE uid = ?");
+            $result = $stmt->execute([$username, $email, $name, $role, $phone, $department, $job_title, $status, $uid]);
             
             if ($result) {
                 return ['success' => true, 'message' => 'User updated successfully'];

@@ -5,6 +5,7 @@ require_once 'includes/usermanager.php';
 require_once 'includes/emailservice.php';
 require_once 'includes/functions.php';
 require_once 'includes/adminkeyhandler.php';
+require_once 'includes/adminmanager.php';
 
 $db = new Database();
 $connection = $db->connect();
@@ -16,15 +17,15 @@ $success = '';
 $keydata = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = sanitize($_POST['username']);
-    $name = sanitize($_POST['name']);
-    $last_name = sanitize($_POST['last_name']);
-    $email = sanitize($_POST['email']);
-    $password = $_POST['password'];
-    $confirmPassword = $_POST['confirm_password'];
-    $phone = sanitize($_POST['phone']);
-    $department = sanitize($_POST['department']);
-    $job_title = sanitize($_POST['job_title']);
+   // Use null coalescing operator to prevent undefined key warnings
+    $username = sanitize($_POST['username'] ?? '');
+    $name = sanitize($_POST['name'] ?? '');
+    $email = sanitize($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
+    $phone = sanitize($_POST['phone'] ?? '');
+    $department = sanitize($_POST['department'] ?? '');
+    $job_title = sanitize($_POST['job_title'] ?? '');
     $role = sanitize($_POST['role'] ?? 'user'); 
     $admin_key = $_POST['admin_key'] ?? '';
     
@@ -542,7 +543,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">First Name <span class="text-danger">*</span></label>
+                                <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">
                                         <i class="fas fa-user"></i>
@@ -550,17 +551,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <input type="text" class="form-control" id="name" name="name" 
                                            value="<?php echo isset($_POST['name']) ? htmlspecialchars($_POST['name']) : ''; ?>" 
                                            required placeholder="John">
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
-                                    </span>
-                                    <input type="text" class="form-control" id="last_name" name="last_name" 
-                                           value="<?php echo isset($_POST['last_name']) ? htmlspecialchars($_POST['last_name']) : ''; ?>" 
-                                           required placeholder="Doe">
                                 </div>
                             </div>
                         </div>
@@ -739,7 +729,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Initialize on Page Load
     document.addEventListener('DOMContentLoaded', function() {
         toggleAdminKey();
+        initializeDefaultRole();
     });
+
+    // Initialize default role if none selected
+    function initializeDefaultRole() {
+        const selectedRole = document.getElementById('selectedRole').value;
+        if (!selectedRole) {
+            // Default to user role
+            const userOption = document.querySelector('.role-option[data-role="user"]');
+            if (userOption) {
+                userOption.click();
+            }
+        }
+    }
 
     // Toggle admin key function
     function toggleAdminKey() {
@@ -785,43 +788,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             selectedRoleInput.value = role;
             
             // Update UI based on role
-            if (role === 'admin') {
-                logoIcon.classList.add('admin');
-                headerTitle.textContent = 'Create Admin Account';
-                headerSubtitle.textContent = 'Administrator registration with full system access';
-                submitBtn.classList.add('admin');
-                submitBtn.innerHTML = '<i class="fas fa-crown me-2"></i>Create Admin Account';
-                adminWarning.classList.remove('d-none');
-                adminKeyField.classList.remove('d-none');
-                adminRequiredFields.classList.remove('d-none');
-                optionalFieldsSection.classList.add('d-none');
-                passwordHelp.textContent = 'At least 8 characters with complexity requirements';
-                adminPasswordReq.classList.remove('d-none');
-                
-                // Make admin fields required
-                document.getElementById('admin_phone').setAttribute('required', 'required');
-                document.getElementById('admin_department').setAttribute('required', 'required');
-                document.getElementById('admin_job_title').setAttribute('required', 'required');
-            } else {
-                logoIcon.classList.remove('admin');
-                headerTitle.textContent = 'Create User Account';
-                headerSubtitle.textContent = 'Standard user registration for task management';
-                submitBtn.classList.remove('admin');
-                submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create User Account';
-                adminWarning.classList.add('d-none');
-                adminKeyField.classList.add('d-none');
-                adminRequiredFields.classList.add('d-none');
-                optionalFieldsSection.classList.remove('d-none');
-                passwordHelp.textContent = 'At least 6 characters';
-                adminPasswordReq.classList.add('d-none');
-                
-                // Remove required attributes from admin fields
-                document.getElementById('admin_phone').removeAttribute('required');
-                document.getElementById('admin_department').removeAttribute('required');
-                document.getElementById('admin_job_title').removeAttribute('required');
-            }
+            updateUIForRole(role);
         });
     });
+
+    // Update UI based on selected role
+    function updateUIForRole(role) {
+        if (role === 'admin') {
+            // Admin UI updates
+            logoIcon.classList.add('admin');
+            headerTitle.textContent = 'Create Admin Account';
+            headerSubtitle.textContent = 'Administrator registration with full system access';
+            submitBtn.classList.add('admin');
+            submitBtn.innerHTML = '<i class="fas fa-crown me-2"></i>Create Admin Account';
+            adminWarning.classList.remove('d-none');
+            adminKeyField.classList.remove('d-none');
+            adminRequiredFields.classList.remove('d-none');
+            optionalFieldsSection.classList.add('d-none');
+            passwordHelp.textContent = 'At least 8 characters with complexity requirements';
+            adminPasswordReq.classList.remove('d-none');
+            
+            // Make admin fields required
+            setAdminFieldsRequired(true);
+        } else {
+            // User UI updates
+            logoIcon.classList.remove('admin');
+            headerTitle.textContent = 'Create User Account';
+            headerSubtitle.textContent = 'Standard user registration for task management';
+            submitBtn.classList.remove('admin');
+            submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create User Account';
+            adminWarning.classList.add('d-none');
+            adminKeyField.classList.add('d-none');
+            adminRequiredFields.classList.add('d-none');
+            optionalFieldsSection.classList.remove('d-none');
+            passwordHelp.textContent = 'At least 6 characters';
+            adminPasswordReq.classList.add('d-none');
+            
+            // Remove required attributes from admin fields
+            setAdminFieldsRequired(false);
+        }
+        
+        // Update admin key visibility
+        toggleAdminKey();
+    }
+
+    // Helper function to set admin fields required status
+    function setAdminFieldsRequired(required) {
+        const adminFields = ['admin_phone', 'admin_department', 'admin_job_title'];
+        adminFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                if (required) {
+                    field.setAttribute('required', 'required');
+                } else {
+                    field.removeAttribute('required');
+                    field.classList.remove('is-invalid');
+                    field.setCustomValidity('');
+                }
+            }
+        });
+    }
 
     // Password toggle functionality
     const togglePassword = document.getElementById('togglePassword');
@@ -831,103 +857,276 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const eyeIcon = document.getElementById('eyeIcon');
     const eyeIconConfirm = document.getElementById('eyeIconConfirm');   
     
-    togglePassword.addEventListener('click', function() {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        eyeIcon.classList.toggle('fa-eye');
-        eyeIcon.classList.toggle('fa-eye-slash');
-    });
+    if (togglePassword && passwordInput && eyeIcon) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            eyeIcon.classList.toggle('fa-eye');
+            eyeIcon.classList.toggle('fa-eye-slash');
+        });
+    }
     
-    toggleConfirmPassword.addEventListener('click', function() {
-        const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        confirmPasswordInput.setAttribute('type', type);
-        eyeIconConfirm.classList.toggle('fa-eye');
-        eyeIconConfirm.classList.toggle('fa-eye-slash');
-    });
+    if (toggleConfirmPassword && confirmPasswordInput && eyeIconConfirm) {
+        toggleConfirmPassword.addEventListener('click', function() {
+            const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPasswordInput.setAttribute('type', type);
+            eyeIconConfirm.classList.toggle('fa-eye');
+            eyeIconConfirm.classList.toggle('fa-eye-slash');
+        });
+    }
 
-    // Form validation
-    const registrationForm = document.getElementById('registrationForm');
-    registrationForm.addEventListener('submit', function(event) {
-        const role = selectedRoleInput.value;
-        const password = passwordInput.value;
-        const confirmPassword = confirmPasswordInput.value;
-        let isValid = true;
+    // Password validation functions
+    function validatePassword(password, role) {
+        const minLength = role === 'admin' ? 8 : 6;
         
-        console.log('Form submitted with role:', role); // Debug
-        
-        // Check if passwords match
-        if (password !== confirmPassword) {
-            event.preventDefault();
-            isValid = false;
-            confirmPasswordInput.classList.add('is-invalid');
-            confirmPasswordInput.setCustomValidity('Passwords do not match');
-        } else {
-            confirmPasswordInput.classList.remove('is-invalid');
-            confirmPasswordInput.setCustomValidity('');
+        if (password.length < minLength) {
+            return {
+                isValid: false,
+                message: `Password must be at least ${minLength} characters long`
+            };
         }
-
-        // Additional validation for admin role
+        
         if (role === 'admin') {
-            const adminKey = document.getElementById('admin_key').value;
-            const adminPhone = document.getElementById('admin_phone').value;
-            const adminDepartment = document.getElementById('admin_department').value;
-            const adminJobTitle = document.getElementById('admin_job_title').value;
+            // Admin password complexity requirements
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasLowercase = /[a-z]/.test(password);
+            const hasNumbers = /\d/.test(password);
+            const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
             
-            console.log('Admin validation:', {
-                adminKey: adminKey,
-                adminPhone: adminPhone,
-                adminDepartment: adminDepartment,
-                adminJobTitle: adminJobTitle
-            }); // Debug
-            
-            if (!adminKey || !adminPhone || !adminDepartment || !adminJobTitle) {
-                event.preventDefault();
-                isValid = false;
-                
-                console.log('Admin validation failed'); // Debug
-
-                if (!adminKey) {
-                    document.getElementById('admin_key').classList.add('is-invalid');
-                    document.getElementById('admin_key').setCustomValidity('Admin key is required');
-                } else {
-                    document.getElementById('admin_key').classList.remove('is-invalid');
-                    document.getElementById('admin_key').setCustomValidity('');
-                }
-
-                if (!adminPhone) {
-                    document.getElementById('admin_phone').classList.add('is-invalid');
-                    document.getElementById('admin_phone').setCustomValidity('Phone number is required');
-                } else {
-                    document.getElementById('admin_phone').classList.remove('is-invalid');
-                    document.getElementById('admin_phone').setCustomValidity('');
-                }
-
-                if (!adminDepartment) {
-                    document.getElementById('admin_department').classList.add('is-invalid');
-                    document.getElementById('admin_department').setCustomValidity('Department is required');
-                } else {
-                    document.getElementById('admin_department').classList.remove('is-invalid');
-                    document.getElementById('admin_department').setCustomValidity('');
-                }
-                
-                if (!adminJobTitle) {
-                    document.getElementById('admin_job_title').classList.add('is-invalid');
-                    document.getElementById('admin_job_title').setCustomValidity('Job title is required');
-                } else {
-                    document.getElementById('admin_job_title').classList.remove('is-invalid');
-                    document.getElementById('admin_job_title').setCustomValidity('');
-                }
+            if (!hasUppercase || !hasLowercase || !hasNumbers || !hasSpecialChar) {
+                return {
+                    isValid: false,
+                    message: 'Admin password must contain uppercase, lowercase, numbers, and special characters'
+                };
             }
         }
+        
+        return { isValid: true, message: '' };
+    }
 
-        // If form is not valid, prevent submission
-        if (!isValid) {
-            event.preventDefault();
-            console.log('Form validation failed, preventing submission'); // Debug
-            return false;
+    // Validate common required fields
+    function validateCommonFields() {
+        const requiredFields = ['username', 'email', 'password', 'confirm_password'];
+        let isValid = true;
+        
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field && !field.value.trim()) {
+                field.classList.add('is-invalid');
+                field.setCustomValidity('This field is required');
+                isValid = false;
+            } else if (field) {
+                field.classList.remove('is-invalid');
+                field.setCustomValidity('');
+            }
+        });
+        
+        return isValid;
+    }
+
+    // Validate user-specific fields
+    function validateUserFields() {
+        // User fields are generally optional, but we can add validation if needed
+        // For now, just clear any previous validation errors
+        const userFields = ['phone', 'department', 'job_title'];
+        userFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.classList.remove('is-invalid');
+                field.setCustomValidity('');
+            }
+        });
+        return true;
+    }
+
+    // Validate admin-specific fields
+    function validateAdminFields() {
+        const adminFields = [
+            { id: 'admin_key', name: 'Admin key' },
+            { id: 'admin_phone', name: 'Phone number' },
+            { id: 'admin_department', name: 'Department' },
+            { id: 'admin_job_title', name: 'Job title' }
+        ];
+        
+        let isValid = true;
+        
+        adminFields.forEach(field => {
+            const fieldElement = document.getElementById(field.id);
+            if (fieldElement) {
+                if (!fieldElement.value.trim()) {
+                    fieldElement.classList.add('is-invalid');
+                    fieldElement.setCustomValidity(`${field.name} is required for admin registration`);
+                    isValid = false;
+                } else {
+                    fieldElement.classList.remove('is-invalid');
+                    fieldElement.setCustomValidity('');
+                }
+            }
+        });
+        
+        return isValid;
+    }
+
+    // Main form validation
+    const registrationForm = document.getElementById('registrationForm');
+    if (registrationForm) {
+        registrationForm.addEventListener('submit', function(event) {
+            const role = selectedRoleInput.value;
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            let isValid = true;
+            
+            console.log('Form submitted with role:', role);
+            
+            // Clear previous validation states
+            document.querySelectorAll('.is-invalid').forEach(field => {
+                field.classList.remove('is-invalid');
+                field.setCustomValidity('');
+            });
+            
+            // Validate common fields
+            if (!validateCommonFields()) {
+                isValid = false;
+            }
+            
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                confirmPasswordInput.classList.add('is-invalid');
+                confirmPasswordInput.setCustomValidity('Passwords do not match');
+                isValid = false;
+            }
+            
+            // Validate password complexity
+            const passwordValidation = validatePassword(password, role);
+            if (!passwordValidation.isValid) {
+                passwordInput.classList.add('is-invalid');
+                passwordInput.setCustomValidity(passwordValidation.message);
+                isValid = false;
+            }
+            
+            // Role-specific validation
+            if (role === 'admin') {
+                if (!validateAdminFields()) {
+                    isValid = false;
+                }
+            } else if (role === 'user') {
+                if (!validateUserFields()) {
+                    isValid = false;
+                }
+            }
+            
+            // Email validation
+            const emailField = document.getElementById('email');
+            if (emailField && emailField.value) {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(emailField.value)) {
+                    emailField.classList.add('is-invalid');
+                    emailField.setCustomValidity('Please enter a valid email address');
+                    isValid = false;
+                }
+            }
+            
+            // Username validation
+            const usernameField = document.getElementById('username');
+            if (usernameField && usernameField.value) {
+                const username = usernameField.value.trim();
+                if (username.length < 3) {
+                    usernameField.classList.add('is-invalid');
+                    usernameField.setCustomValidity('Username must be at least 3 characters long');
+                    isValid = false;
+                } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                    usernameField.classList.add('is-invalid');
+                    usernameField.setCustomValidity('Username can only contain letters, numbers, and underscores');
+                    isValid = false;
+                }
+            }
+            
+            // If form is not valid, prevent submission
+            if (!isValid) {
+                event.preventDefault();
+                console.log('Form validation failed, preventing submission');
+                
+                // Scroll to first invalid field
+                const firstInvalidField = document.querySelector('.is-invalid');
+                if (firstInvalidField) {
+                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalidField.focus();
+                }
+                
+                return false;
+            }
+            
+            console.log('Form validation passed, submitting');
+            
+            // Optional: Show loading state
+            const submitButton = document.getElementById('submitBtn');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
+            }
+        });
+    }
+
+    // Real-time validation feedback
+    function setupRealTimeValidation() {
+        // Password confirmation real-time validation
+        if (confirmPasswordInput) {
+            confirmPasswordInput.addEventListener('input', function() {
+                const password = passwordInput.value;
+                const confirmPassword = this.value;
+                
+                if (confirmPassword && password !== confirmPassword) {
+                    this.classList.add('is-invalid');
+                    this.setCustomValidity('Passwords do not match');
+                } else {
+                    this.classList.remove('is-invalid');
+                    this.setCustomValidity('');
+                }
+            });
         }
         
-        console.log('Form validation passed, submitting'); // Debug
+        // Email real-time validation
+        const emailField = document.getElementById('email');
+        if (emailField) {
+            emailField.addEventListener('blur', function() {
+                const email = this.value.trim();
+                if (email) {
+                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailPattern.test(email)) {
+                        this.classList.add('is-invalid');
+                        this.setCustomValidity('Please enter a valid email address');
+                    } else {
+                        this.classList.remove('is-invalid');
+                        this.setCustomValidity('');
+                    }
+                }
+            });
+        }
+        
+        // Username real-time validation
+        const usernameField = document.getElementById('username');
+        if (usernameField) {
+            usernameField.addEventListener('blur', function() {
+                const username = this.value.trim();
+                if (username) {
+                    if (username.length < 3) {
+                        this.classList.add('is-invalid');
+                        this.setCustomValidity('Username must be at least 3 characters long');
+                    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                        this.classList.add('is-invalid');
+                        this.setCustomValidity('Username can only contain letters, numbers, and underscores');
+                    } else {
+                        this.classList.remove('is-invalid');
+                        this.setCustomValidity('');
+                    }
+                }
+            });
+        }
+    }
+
+    // Initialize real-time validation
+    document.addEventListener('DOMContentLoaded', function() {
+        setupRealTimeValidation();
     });
 </script>
 </body>
