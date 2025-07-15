@@ -238,7 +238,7 @@ class TaskManager {
     /**
      * Get task statistics for a user
      */
-    public function getTaskStats($userId) {
+    public function getTaskStats($useruid) {
         try {
             $stmt = $this->db->prepare("
                 SELECT 
@@ -250,7 +250,7 @@ class TaskManager {
                 FROM tasks 
                 WHERE assigned_to = ?
             ");
-            $stmt->execute([$userId]);
+            $stmt->execute([$useruid]);
             $stats = $stmt->fetch(PDO::FETCH_ASSOC);
             
             return [

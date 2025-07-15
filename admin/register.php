@@ -1,11 +1,11 @@
 <?php
-require_once 'includes/config.php';
-require_once 'includes/db.php';
-require_once 'includes/usermanager.php';
-require_once 'includes/emailservice.php';
-require_once 'includes/functions.php';
-require_once 'includes/adminkeyhandler.php';
-require_once 'includes/adminmanager.php';
+require_once '../includes/config.php';
+require_once '../includes/db.php';
+require_once '../includes/usermanager.php';
+require_once '../includes/emailservice.php';
+require_once '../includes/functions.php';
+require_once '../includes/adminkeyhandler.php';
+require_once '../includes/adminmanager.php';
 
 $db = new Database();
 $connection = $db->connect();
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($error)) {
         try {
             // Initialize admin key handler
-            $adminKeyHandler = new AdminKeyHandler($pdo);
+            $adminKeyHandler = new AdminKeyHandler($connection);
             
             // Validate admin key with restrictions
             $keyValidation = $adminKeyHandler->validateAdminKey(
@@ -99,7 +99,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email,
             $password,
             $name,
-            '', // last_name - not used in this form
             $role,
             $phone,
             $department,
@@ -173,4 +172,332 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Registration - Task Manager</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .registration-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+        .alert-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+        .alert-success {
+            background: linear-gradient(45deg, #51cf66, #40c057);
+            color: white;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        .required {
+            color: #dc3545;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo i {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .logo h2 {
+            color: #495057;
+            font-weight: 700;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group-text {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+        }
+        .input-group .form-control {
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+        }
+        .password-requirements {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="registration-container">
+                    <div class="logo">
+                        <i class="fas fa-user-shield"></i>
+                        <h2>Admin Registration</h2>
+                        <p class="text-muted">Create your administrator account</p>
+                    </div>
+
+                    <?php if (!empty($error)): ?>
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <?php echo htmlspecialchars($error); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($success)): ?>
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <?php echo htmlspecialchars($success); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="username" 
+                                           placeholder="Username" 
+                                           value="<?php echo htmlspecialchars($username ?? ''); ?>" 
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-id-card"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="name" 
+                                           placeholder="Full Name" 
+                                           value="<?php echo htmlspecialchars($name ?? ''); ?>" 
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                    <input type="email" class="form-control" name="email" 
+                                           placeholder="Email Address" 
+                                           value="<?php echo htmlspecialchars($email ?? ''); ?>" 
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-phone"></i>
+                                    </span>
+                                    <input type="tel" class="form-control" name="phone" 
+                                           placeholder="Phone Number" 
+                                           value="<?php echo htmlspecialchars($phone ?? ''); ?>" 
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-building"></i>
+                                    </span>
+                                    <select class="form-control" name="department" required>
+                                        <option value="">Select Department</option>
+                                        <option value="IT" <?php echo ($department ?? '') === 'IT' ? 'selected' : ''; ?>>Information Technology</option>
+                                        <option value="HR" <?php echo ($department ?? '') === 'HR' ? 'selected' : ''; ?>>Human Resources</option>
+                                        <option value="Finance" <?php echo ($department ?? '') === 'Finance' ? 'selected' : ''; ?>>Finance</option>
+                                        <option value="Marketing" <?php echo ($department ?? '') === 'Marketing' ? 'selected' : ''; ?>>Marketing</option>
+                                        <option value="Operations" <?php echo ($department ?? '') === 'Operations' ? 'selected' : ''; ?>>Operations</option>
+                                        <option value="Sales" <?php echo ($department ?? '') === 'Sales' ? 'selected' : ''; ?>>Sales</option>
+                                        <option value="Support" <?php echo ($department ?? '') === 'Support' ? 'selected' : ''; ?>>Customer Support</option>
+                                        <option value="Management" <?php echo ($department ?? '') === 'Management' ? 'selected' : ''; ?>>Management</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-briefcase"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="job_title" 
+                                           placeholder="Job Title" 
+                                           value="<?php echo htmlspecialchars($job_title ?? ''); ?>" 
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" name="password" 
+                                           placeholder="Password" required>
+                                </div>
+                                <div class="password-requirements">
+                                    <small>Must contain: uppercase, lowercase, number, and special character</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" name="confirm_password" 
+                                           placeholder="Confirm Password" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-key"></i>
+                            </span>
+                            <input type="text" class="form-control" name="admin_key" 
+                                   placeholder="Admin Registration Key" 
+                                   value="<?php echo htmlspecialchars($admin_key ?? ''); ?>" 
+                                   required>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            You need a valid admin registration key to create an administrator account.
+                        </small>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Register Admin Account
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="back-link">
+                        <a href="../login.php">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Back to Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add some interactive feedback
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const inputs = form.querySelectorAll('input, select');
+            
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+            });
+            
+            // Password strength indicator
+            const passwordInput = document.querySelector('input[name="password"]');
+            const confirmPasswordInput = document.querySelector('input[name="confirm_password"]');
+            
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                const hasUpper = /[A-Z]/.test(password);
+                const hasLower = /[a-z]/.test(password);
+                const hasNumber = /\d/.test(password);
+                const hasSpecial = /[@$!%*?&]/.test(password);
+                const minLength = password.length >= 8;
+                
+                if (hasUpper && hasLower && hasNumber && hasSpecial && minLength) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    if (password.length > 0) {
+                        this.classList.add('is-invalid');
+                    }
+                }
+            });
+            
+            confirmPasswordInput.addEventListener('input', function() {
+                if (this.value === passwordInput.value && this.value.length > 0) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    if (this.value.length > 0) {
+                        this.classList.add('is-invalid');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

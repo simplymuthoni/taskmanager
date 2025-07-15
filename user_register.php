@@ -420,7 +420,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="footer-links">
                         <a href="login.php">Already have an account? Sign in</a>
                         <span class="mx-2">•</span>
-                        <a href="admin_register.php">Admin Registration</a>
+                        <a href="./admin/register.php">Admin Registration</a>
                         <span class="mx-2">•</span>
                         <a href="index.php">Back to Home</a>
                     </div>

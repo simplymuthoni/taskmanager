@@ -308,7 +308,7 @@ if ($userManager->isLoggedIn()) {
                     </div>
                     
                     <div class="footer-links">
-                        <a href="admin_register.php">
+                        <a href="/admin/register.php">
                             <i class="fas fa-user-shield me-1"></i>Admin Registration
                         </a>
                         <span class="mx-2">•</span>
